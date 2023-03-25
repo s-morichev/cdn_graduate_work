@@ -55,7 +55,6 @@ services:
     container_name: clickhouse-node1
     hostname: clickhouse-node1
     volumes:
-      #- ./etl_ugc/data/node1:/etc/clickhouse-server
       - clickhouse_1_data:/var/lib/clickhouse/
     depends_on:
       - zookeeper
