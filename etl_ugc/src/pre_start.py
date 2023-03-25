@@ -12,18 +12,14 @@ logger = logging.getLogger(__name__)
 
 QUERIES = [
     """
-CREATE DATABASE IF NOT EXISTS ugc ON CLUSTER company_cluster;
+CREATE DATABASE IF NOT EXISTS ugc;
 """,
     """
-CREATE TABLE IF NOT EXISTS ugc.viewed_films ON CLUSTER company_cluster
+CREATE TABLE IF NOT EXISTS ugc.viewed_films
 (user_id UUID, film_id UUID,  pos_start Int64, pos_end Int64, created_at DateTime DEFAULT now())
-Engine=ReplicatedMergeTree('/clickhouse/tables/{shard}/viewed_films', '{replica}')
-PARTITION BY toYYYYMMDD(created_at) ORDER BY film_id;
-""",
-    """
-CREATE TABLE IF NOT EXISTS default.viewed_films ON CLUSTER company_cluster
-(user_id UUID, film_id UUID,  pos_start Int64, pos_end Int64, created_at DateTime DEFAULT now())
-ENGINE = Distributed('company_cluster', ugc, viewed_films, rand());
+ENGINE = MergeTree()
+PARTITION BY toYYYYMMDD(created_at)
+ORDER BY film_id;
 """,
 ]
 
@@ -39,7 +35,7 @@ def init_db(db: Client) -> None:
 
 
 def create_kafka_topics(topic_names: List[str]) -> None:
-    new_topics = [NewTopic(topic_name, num_partitions=6, replication_factor=3) for topic_name in topic_names]
+    new_topics = [NewTopic(topic_name, num_partitions=1, replication_factor=1) for topic_name in topic_names]
     admin_client = AdminClient(admin_config)
     futures = admin_client.create_topics(new_topics, validate_only=False)
 

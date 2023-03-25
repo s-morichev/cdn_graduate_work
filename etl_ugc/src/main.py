@@ -5,7 +5,7 @@ import confluent_kafka
 
 import logging_config  # noqa
 from config import consumer_config, settings
-from etl_ugc import ETL
+from etl import ETL
 from extractor import KafkaBroker
 from loader import Clickhouse
 from pre_start import create_kafka_topics, init_db

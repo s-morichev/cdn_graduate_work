@@ -1,0 +1,26 @@
+services:
+  broker-1:
+    ports:
+      - "39092:39092"
+
+  etl_ugc:
+    build:
+      context: ./etl_ugc
+      dockerfile: ./docker/Dockerfile
+
+  clickhouse-node1:
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+
+  ugc_service:
+    build:
+      context: ./ugc
+      dockerfile: ./docker/Dockerfile
+      target: development
+      tags:
+          - "ugc_service"
+    volumes:
+      - ./ugc/src:/opt/app
+    ports:
+        - "8001:8001"

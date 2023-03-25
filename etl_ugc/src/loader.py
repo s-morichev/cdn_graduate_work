@@ -12,7 +12,7 @@ from model import ViewedFilm
 
 logger = logging.getLogger(__name__)
 
-CLICKHOUSE_INSERT_QUERY = "INSERT INTO default.viewed_films (user_id, film_id, pos_start, pos_end) VALUES"
+CLICKHOUSE_INSERT_QUERY = "INSERT INTO ugc.viewed_films (user_id, film_id, pos_start, pos_end) VALUES"
 
 
 class Database:

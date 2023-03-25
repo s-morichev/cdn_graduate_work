@@ -1,0 +1,90 @@
+version: '3.7'
+services:
+  zookeeper-1:
+    image: confluentinc/cp-zookeeper:7.3.0
+    container_name: zookeeper-1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_1_data:/var/lib/zookeeper/data
+
+  broker-1:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: broker-1
+    depends_on:
+      - zookeeper-1
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ADVERTISED_LISTENERS: INSIDE_DOCKER://broker-1:9092,ON_HOST://localhost:39092,INTERNAL://broker-1:29092
+    env_file:
+      - .env
+    volumes:
+      - broker_1_data:/var/lib/kafka/data
+
+  etl_ugc:
+    image: etl_ugc
+    restart: "always"
+    container_name: etl_kafka
+    env_file:
+      - .env
+    depends_on:
+      - broker-1
+
+  zookeeper:
+    image: zookeeper:3.5
+    container_name: zookeeper
+    hostname: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+
+
+  clickhouse-node1:
+    image: yandex/clickhouse-server:21.3
+    container_name: clickhouse-node1
+    hostname: clickhouse-node1
+    volumes:
+      #- ./etl_ugc/data/node1:/etc/clickhouse-server
+      - clickhouse_1_data:/var/lib/clickhouse/
+    depends_on:
+      - zookeeper
+
+
+  ugc_service:
+    restart: "always"
+    image: ugc_service
+    container_name: ugc_service
+    env_file:
+        - .env
+    depends_on:
+        - broker-1
+
+  nginx:
+    image: nginx:1.23.3-alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/configs:/etc/nginx/conf.d:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - ugc_service
+
+  mongodb_ugc:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_DATABASE: prod-db
+      MONGO_INITDB_ROOT_USERNAME: user_name
+      MONGO_INITDB_ROOT_PASSWORD: user_password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_ugc_data:/data/db
+
+volumes:
+  zookeeper_1_data:
+  broker_1_data:
+  zookeeper_data:
+  clickhouse_1_data:
+  mongodb_ugc_data:
