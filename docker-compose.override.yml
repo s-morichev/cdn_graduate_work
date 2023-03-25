@@ -11,7 +11,7 @@ services:
   clickhouse-node1:
     ports:
       - "8123:8123"
-      - "9000:9000"
+      - "9100:9000"
 
   ugc_service:
     build:
@@ -39,7 +39,6 @@ services:
     ports:
       - "${PG_AUTH_PORT}:5432"
 
-
   backend:
     restart: "always"
     build:
@@ -59,3 +58,30 @@ services:
   elasticsearch_movies:
     ports:
       - "${ELK_MOVIES_PORT}:9200"
+
+  minio_0:
+    ports:
+     - "9000:9000"
+     - "9001:9001"
+
+  nginx_minio_0:
+    ports:
+      - "7000:80"
+
+  minio_1:
+    ports:
+      - "9010:9000"
+      - "9011:9001"
+
+  nginx_minio_1:
+    ports:
+      - "7010:80"
+
+  minio_2:
+    ports:
+      - "9020:9000"
+      - "9021:9001"
+
+  nginx_minio_2:
+    ports:
+      - "7020:80"

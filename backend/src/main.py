@@ -39,8 +39,8 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
     openapi_tags=tags_metadata,
-    docs_url="/api/openapi",
-    openapi_url="/api/openapi.json",
+    docs_url="/backend/openapi",
+    openapi_url="/backend/openapi.json",
     default_response_class=ORJSONResponse,
     dependencies=deps,
 )

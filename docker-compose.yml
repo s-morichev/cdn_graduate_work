@@ -3,8 +3,8 @@ services:
   nginx:
     image: nginx:1.23.3-alpine
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/configs:/etc/nginx/conf.d:ro
+      - ./nginx/proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/proxy/configs:/etc/nginx/conf.d:ro
     ports:
       - "80:80"
     depends_on:
@@ -50,7 +50,6 @@ services:
     volumes:
       - zookeeper_data:/var/lib/zookeeper/data
 
-
   clickhouse-node1:
     image: yandex/clickhouse-server:21.3
     container_name: clickhouse-node1
@@ -60,7 +59,6 @@ services:
       - clickhouse_1_data:/var/lib/clickhouse/
     depends_on:
       - zookeeper
-
 
   ugc_service:
     restart: "always"
@@ -81,7 +79,6 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_ugc_data:/data/db
-
 
   auth:
     restart: "always"
@@ -143,6 +140,57 @@ services:
         soft: 65536
         hard: 65536
 
+  minio_0:
+    image: minio/minio:RELEASE.2023-03-24T21-41-23Z
+    command: server --console-address ":9001" /data/
+    environment:
+     MINIO_ROOT_USER: ${MINIO_USER}
+     MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    volumes:
+     - minio_0_data:/data
+
+  nginx_minio_0:
+    image: nginx:1.23.3-alpine
+    volumes:
+      - ./nginx/s3_proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/s3_proxy/configs/s3_0.conf:/etc/nginx/conf.d/s3_0.conf:ro
+    depends_on:
+      - minio_0
+
+  minio_1:
+    image: minio/minio:RELEASE.2023-03-24T21-41-23Z
+    command: server --console-address ":9001" /data/
+    environment:
+     MINIO_ROOT_USER: ${MINIO_USER}
+     MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    volumes:
+     - minio_1_data:/data
+
+  nginx_minio_1:
+    image: nginx:1.23.3-alpine
+    volumes:
+      - ./nginx/s3_proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/s3_proxy/configs/s3_0.conf:/etc/nginx/conf.d/s3_1.conf:ro
+    depends_on:
+      - minio_1
+
+  minio_2:
+    image: minio/minio:RELEASE.2023-03-24T21-41-23Z
+    command: server --console-address ":9001" /data/
+    environment:
+     MINIO_ROOT_USER: ${MINIO_USER}
+     MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    volumes:
+     - minio_2_data:/data
+
+  nginx_minio_2:
+    image: nginx:1.23.3-alpine
+    volumes:
+      - ./nginx/s3_proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/s3_proxy/configs/s3_0.conf:/etc/nginx/conf.d/s3_2.conf:ro
+    depends_on:
+      - minio_2
+
 volumes:
   zookeeper_1_data:
   broker_1_data:
@@ -152,3 +200,6 @@ volumes:
   redis_auth_data:
   postgres_auth_data:
   elasticsearch_movies_data:
+  minio_0_data:
+  minio_1_data:
+  minio_2_data:
