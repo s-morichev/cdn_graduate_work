@@ -1,13 +1,13 @@
-from http import HTTPStatus
 import logging
+from http import HTTPStatus
 
+import redis.asyncio as aioredis
 import uvicorn as uvicorn
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.responses import ORJSONResponse
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-import redis.asyncio as aioredis
 from api.v1 import films, genres, persons, ping, view
 from core.config import settings
 from core.logger import LOGGING

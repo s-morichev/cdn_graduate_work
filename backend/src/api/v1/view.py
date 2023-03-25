@@ -4,10 +4,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from core.auth_bearer import jwt_bearer
 from core.utils import can_view_film
 from models.token import AccessTokenPayload
 from services.films import FilmByIdService
-from core.auth_bearer import jwt_bearer
 
 logger = logging.getLogger(__name__)
 

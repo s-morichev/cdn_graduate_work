@@ -2,9 +2,9 @@ import threading
 from typing import Tuple
 
 import pytest
+from etl_ugc import ETL
 
 import tests.source_root  # noqa F401 - прогружает путь до /src/....
-from etl_ugc import ETL
 from extractor import KafkaBroker
 from loader import Clickhouse
 from storage import KafkaStorage

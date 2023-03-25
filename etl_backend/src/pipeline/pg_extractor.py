@@ -15,10 +15,10 @@ from core.constants import (
     FW_UPDATE_KEY,
     GENRE_SQL,
     GENRES_UPDATE_KEY,
-    PERSON_SQL,
-    PERSONS_UPDATE_KEY,
     MARK_SQL,
     MARKS_UPDATE_KEY,
+    PERSON_SQL,
+    PERSONS_UPDATE_KEY,
 )
 from pipeline.data_classes import PGData
 from pipeline.etl_pipeline import ETLData, ETLPipelineError, Extractor

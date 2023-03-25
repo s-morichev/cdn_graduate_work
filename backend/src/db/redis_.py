@@ -1,5 +1,6 @@
-from core.cache_service import RedisCacheService
 from redis.asyncio import Redis
+
+from core.cache_service import RedisCacheService
 
 redis: Redis | None
 

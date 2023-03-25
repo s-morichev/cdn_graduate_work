@@ -5,14 +5,14 @@ from elastic_transport import ConnectionError as ESConnectionError
 
 from core import etl_logger
 from core.backoff import backoff
+from core.etl_utils import check_or_create_indexes
+from core.settings import STATE_FILE, settings
+from core.storage import DictState, JsonFileStorage
 from pipeline.es_loader import ESLoader
 from pipeline.etl_pipeline import ETLPipeline, ETLPipelineError
 from pipeline.etl_transformer import ETLTransformer
-from core.etl_utils import check_or_create_indexes
 from pipeline.pg_extractor import FWExtractor
 from pipeline.plane_pipelines import DummyTransformer, GenreExtractor, PersonExtractor
-from core.settings import STATE_FILE, settings
-from core.storage import DictState, JsonFileStorage
 
 logger = etl_logger.get_logger("ETL")
 ev_exit = Event()

@@ -63,13 +63,15 @@ def secret_key_required(secret_key: str):
             if secret_key is None:
                 secret_key = current_app.secret_key
 
-            header_secret_key = request.headers.get('Authorization', '')
+            header_secret_key = request.headers.get("Authorization", "")
             if header_secret_key != secret_key:
                 raise NoAuthorizationError(f"Invalid secret key")
 
             rv = f(*args, **kwargs)
             return rv
+
         return decorated_function
+
     return decorator
 
 

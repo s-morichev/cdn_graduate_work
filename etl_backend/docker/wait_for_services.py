@@ -1,10 +1,9 @@
-import os
 import logging.config
-
-from psycopg2 import connect, OperationalError
-from elasticsearch import Elasticsearch
+import os
 
 import backoff
+from elasticsearch import Elasticsearch
+from psycopg2 import OperationalError, connect
 
 PG_URI = os.getenv("PG_MOVIES_DSN")
 ES_URI = os.getenv("ELK_MOVIES_DSN")
@@ -43,7 +42,7 @@ def check_postgres(pg_uri: str) -> bool:
     try:
         with connect(pg_uri) as pg_conn:
             with pg_conn.cursor() as cursor:
-                cursor.execute('SELECT 1')
+                cursor.execute("SELECT 1")
                 return True
     except OperationalError:
         return False

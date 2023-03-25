@@ -1,8 +1,9 @@
 import logging
 from abc import abstractmethod
 
-from core.singletone import Singleton
 from redis.asyncio import Redis, RedisError
+
+from core.singletone import Singleton
 
 logger = logging.getLogger(__name__)
 
