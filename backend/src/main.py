@@ -64,11 +64,11 @@ async def shutdown():
     logger.info("service shutdown")
 
 
-app.include_router(ping.router, prefix="/api/v1/ping", tags=["Пинг"])
-app.include_router(films.router, prefix="/api/v1/films", tags=["Фильмы"])
-app.include_router(persons.router, prefix="/api/v1/persons", tags=["Персоны"])
-app.include_router(genres.router, prefix="/api/v1/genres", tags=["Жанры"])
-app.include_router(view.router, prefix="/api/v1/view", tags=["Просмотр"])
+app.include_router(ping.router, prefix="/backend/v1/ping", tags=["Пинг"])
+app.include_router(films.router, prefix="/backend/v1/films", tags=["Фильмы"])
+app.include_router(persons.router, prefix="/backend/v1/persons", tags=["Персоны"])
+app.include_router(genres.router, prefix="/backend/v1/genres", tags=["Жанры"])
+app.include_router(view.router, prefix="/backend/v1/view", tags=["Просмотр"])
 
 if __name__ == "__main__":
     uvicorn.run(

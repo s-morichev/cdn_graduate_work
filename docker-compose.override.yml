@@ -38,3 +38,24 @@ services:
   postgres_auth:
     ports:
       - "${PG_AUTH_PORT}:5432"
+
+
+  backend:
+    restart: "always"
+    build:
+      context: ./backend
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: backend
+    volumes:
+      - ./backend/src/:/opt/app/
+    ports:
+      - "8000:8000"
+
+  redis_backend:
+    ports:
+      - "${REDIS_BACKEND_PORT}:6379"
+
+  elasticsearch_movies:
+    ports:
+      - "${ELK_MOVIES_PORT}:9200"
