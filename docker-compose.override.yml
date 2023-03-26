@@ -64,24 +64,12 @@ services:
      - "9000:9000"
      - "9001:9001"
 
-  nginx_minio_0:
-    ports:
-      - "7000:80"
-
   minio_1:
     ports:
       - "9010:9000"
       - "9011:9001"
 
-  nginx_minio_1:
-    ports:
-      - "7010:80"
-
   minio_2:
     ports:
       - "9020:9000"
       - "9021:9001"
-
-  nginx_minio_2:
-    ports:
-      - "7020:80"
