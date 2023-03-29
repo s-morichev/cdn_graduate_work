@@ -14,13 +14,16 @@ class ObjectStorageBase:
             aws_access_key_id=self.access_key,
             aws_secret_access_key=self.secret_key
         )
+        try:
+            self.s3.create_bucket(Bucket=self.bucket)
+        except Exception:
+            pass
 
     def check_file(self, key):
         try:
             obj = self.s3.head_object(Bucket=self.bucket, Key=key)
             return obj
         except Exception:
-            print("not found")
             return
 
     def get_link_file(self, key):
@@ -30,6 +33,6 @@ class ObjectStorageBase:
                 'Bucket': self.bucket,
                 'Key': key
             },
-            ExpiresIn=3600  # set expiration time for 1 hour
+            ExpiresIn=3600*24  # set expiration time for 24 hour
         )
         return url
