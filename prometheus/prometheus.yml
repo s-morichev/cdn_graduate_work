@@ -13,4 +13,4 @@ scrape_configs:
       type: Bearer
       credentials_file: /etc/prometheus/.minio_jwt
     static_configs:
-    - targets: ['minio-0:9000', 'minio-1:9000', 'minio-2:9000']
+    - targets: ['nginx-minio-0', 'nginx-minio-1', 'nginx-minio-2']

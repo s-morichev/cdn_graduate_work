@@ -18,8 +18,8 @@
 Для мониторинга используется Prometheus. Графики в процессе разработки и
 дебаггинга можно построить на http://localhost:9090 c использованием PromQL.
 В частности, количество файлов в бакете можно посмотреть с помощью выражения
-`minio_bucket_usage_object_total{bucket="movies", instance="minio-0:9000"}`,
-свободное место на диске `minio_cluster_capacity_usable_free_bytes{instance="minio-0:9000"}`
+`minio_bucket_usage_object_total{bucket="movies", instance="nginx-minio-0:80"}`,
+свободное место на диске `minio_cluster_capacity_usable_free_bytes{instance="nginx-minio-0:80"}`
 Эти данные также можно получить с помощью  HTTP API Prometheus при запросе из
 контейнера (minio обновляет данные раз в минуту)
 ```
