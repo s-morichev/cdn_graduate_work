@@ -59,17 +59,21 @@ services:
     ports:
       - "${ELK_MOVIES_PORT}:9200"
 
-  minio_0:
+  minio-0:
     ports:
      - "9000:9000"
      - "9001:9001"
 
-  minio_1:
+  minio-1:
     ports:
       - "9010:9000"
       - "9011:9001"
 
-  minio_2:
+  minio-2:
     ports:
       - "9020:9000"
       - "9021:9001"
+
+  prometheus:
+    ports:
+      - "9090:9090"
