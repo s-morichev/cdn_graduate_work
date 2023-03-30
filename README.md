@@ -9,7 +9,8 @@
 
 ### Запуск сервисов
 
-Переименуйте env.example в .env. Затем выполните `make dev-run`
+Переименуйте env.example в .env, в папке /prometheus переименуйте .minio_jwt_example
+ .minio_jwt. Затем выполните `make dev-run`
 
 
 ### Мониторинг

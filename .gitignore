@@ -136,4 +136,5 @@ dmypy.json
 auth/.env.test.local
 /tests/functional/allure-results/
 /auth/.env.test.local
+/prometheus/.minio_jwt
 
