@@ -21,7 +21,9 @@ class MinioLoader:
         self.source_minio = Minio(source_host, access_key=access_key, secret_key=secret_key, secure=False)
         self.destination_minio = Minio(destination_host, access_key=access_key, secret_key=secret_key, secure=False)
 
-    def copy_file(self, source_bucket: str, source_object: str, destination_bucket: str, destination_object: str):
+    def copy_file(
+        self, source_bucket: str, source_object: str, destination_bucket: str, destination_object: str
+    ) -> dict:
         # 1 Получаем объект
         try:
             response = self.source_minio.get_object(source_bucket, source_object)
@@ -61,11 +63,11 @@ class MinioLoader:
         )
         return {"name": result.object_name, "etag": result.etag, "size": size}
 
-    def list_source_buckets(self):
+    def list_source_buckets(self) -> list[dict]:
         buckets = self.source_minio.list_buckets()
         return [{"name": bucket.name, "created_at": bucket.creation_date} for bucket in buckets]
 
-    def list_destination_buckets(self):
+    def list_destination_buckets(self) -> list[dict]:
         buckets = self.destination_minio.list_buckets()
         return [{"name": bucket.name, "created_at": bucket.creation_date} for bucket in buckets]
 
@@ -105,10 +107,13 @@ def copy_file(file_name: str, source: str, destination: str) -> dict:
 def delete_file(file_name: str, storage: str) -> dict:
     minio = Minio(storage, access_key=settings.ACCESS_KEY, secret_key=settings.SECRET_KEY, secure=False)
     try:
-        stat = minio.stat_object(settings.BUCKET, file_name)
+        # Ругнется если не будет файла.
+        minio.stat_object(settings.BUCKET, file_name)
+
+        # А удаление без наличия файла нормально проходит, можно много раз удалить))
         minio.remove_object(settings.BUCKET, file_name)
 
     except S3Error as err:
-        return {'error': str(err)}
+        return {"error": str(err)}
 
-    return {'result': 'deleted', 'name': file_name, 'storage': storage}
+    return {"result": "deleted", "name": file_name, "storage": storage}

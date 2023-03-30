@@ -21,7 +21,7 @@ class TaskFailure(Exception):
 def load_object(file_name: str, source: str, destination: str):
     result = copy_file(file_name, source, destination)
 
-    if 'error' in result:
+    if "error" in result:
         raise TaskFailure(result)
 
     return result
@@ -31,7 +31,7 @@ def load_object(file_name: str, source: str, destination: str):
 def delete_object(file_name: str, storage: str):
     result = delete_file(file_name, storage)
 
-    if 'error' in result:
+    if "error" in result:
         raise TaskFailure(result)
 
     return result

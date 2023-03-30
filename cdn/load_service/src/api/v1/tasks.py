@@ -2,7 +2,7 @@ from celery.result import AsyncResult
 from fastapi import APIRouter, Body
 
 from core.core_model import CoreModel
-from workers.worker import celery, load_object, delete_object
+from workers.worker import celery, delete_object, load_object
 
 router = APIRouter()
 
