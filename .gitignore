@@ -137,4 +137,5 @@ auth/.env.test.local
 /tests/functional/allure-results/
 /auth/.env.test.local
 
-/cdn/load_service/env.local
+/cdn/load_service/.env.local
+/cdn/load_service/.env.s3ls

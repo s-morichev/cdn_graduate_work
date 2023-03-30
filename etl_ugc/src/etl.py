@@ -1,6 +1,6 @@
 from config import settings
 from extractor import MessageBroker
-from loader import Database
+from core.s3 import Database
 from storage import Storage
 from transformer import Transformer
 
