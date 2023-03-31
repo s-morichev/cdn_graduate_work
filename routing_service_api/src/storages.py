@@ -20,6 +20,8 @@ class ObjectStorageBase:
             aws_access_key_id=self.access_key,
             aws_secret_access_key=self.secret_key
         )
+
+        # Пока сам создаю ведра, в будущем выпилить
         try:
             self.s3.create_bucket(Bucket=self.bucket)
         except Exception:
