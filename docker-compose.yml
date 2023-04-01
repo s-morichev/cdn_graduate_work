@@ -196,6 +196,56 @@ services:
     depends_on:
       - minio_2
 
+  postgres_movies:
+    image: postgres:15.1-alpine
+    container_name: postgres_movies
+    volumes:
+      - postgres_movies_data:/var/lib/postgresql/data/
+      - ./movies_admin/config/sql/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5436:5432"
+    restart: always
+    environment:
+      - POSTGRES_USER=${PG_MOVIES_USER}
+      - POSTGRES_PASSWORD=${PG_MOVIES_PASSWORD}
+      - POSTGRES_DB=${PG_MOVIES_DB_NAME}
+
+  admin_movies:
+    container_name: admin_movies
+    build:
+      context: ./movies_admin
+      dockerfile: ./Dockerfile
+    command: /bin/bash -c "gunicorn --bind 0.0.0.0:8000 config.wsgi:application --threads 2 --timeout 600"
+    volumes:
+      - static_value:/code/static/
+      - media_value:/code/media/
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${DJANGO_MOVIES_PORT}:8000"
+    links:
+      - "minio_0:minio0"
+    depends_on:
+      - postgres_movies
+      - minio_0
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio_0
+    links:
+      - "minio_0:minio0"
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://minio0:9000 user password;
+      /usr/bin/mc admin info myminio;
+      /usr/bin/mc rm -r --force myminio/online-movies;
+      /usr/bin/mc mb myminio/online-movies;
+      /usr/bin/mc policy download myminio/online-movies;
+      exit 0;
+      "
+
 volumes:
   zookeeper_1_data:
   broker_1_data:
@@ -208,3 +258,6 @@ volumes:
   minio_0_data:
   minio_1_data:
   minio_2_data:
+  static_value:
+  media_value:
+  postgres_movies_data:
