@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     storage2_secret_key: str = Field("supersecret")
     storage2_ip: str = Field("95.142.196.32")
 
-    storage3_url: str = Field("http://localhost:9005/", env="STORAGE2_URL")
+    storage3_url: str = Field("http://localhost:9005/", env="STORAGE3_URL")
     storage3_access_key: str = Field("admin")
     storage3_secret_key: str = Field("supersecret")
     storage3_ip: str = Field("92.255.196.137")

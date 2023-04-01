@@ -8,8 +8,6 @@ from src.settings import settings
 
 app = FastAPI()
 
-cdn_storages = []
-
 fake = Faker()
 
 
