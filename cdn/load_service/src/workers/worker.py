@@ -18,7 +18,7 @@ class TaskFailure(Exception):
 # Create an order - run asynchronous with celery
 #
 @celery.task(name="MinioUpload")
-def load_object(file_name: str, source: str, destination: str):
+def load_object(file_name: str, source: str, destination: str) -> dict[str, str]:
     result = copy_file(file_name, source, destination)
 
     if "error" in result:
@@ -28,7 +28,7 @@ def load_object(file_name: str, source: str, destination: str):
 
 
 @celery.task(name="MinioDelete")
-def delete_object(file_name: str, storage: str):
+def delete_object(file_name: str, storage: str) -> dict[str, str]:
     result = delete_file(file_name, storage)
 
     if "error" in result:

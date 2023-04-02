@@ -15,7 +15,7 @@ class MinioLoader:
     source_minio: Minio
     destination_minio: Minio
     part_size = 10 * 1024 * 1024
-    parallel_uploads = 3
+    parallel_uploads = 4
 
     def __init__(self, source_host: str, destination_host: str, access_key: str, secret_key: str):
         self.source_minio = Minio(source_host, access_key=access_key, secret_key=secret_key, secure=False)
@@ -28,9 +28,8 @@ class MinioLoader:
         try:
             response = self.source_minio.get_object(source_bucket, source_object)
             size = int(response.info()["Content-Length"])
-        except S3Error as err:
+        except (S3Error, HTTPError) as err:
             logging.error(err)
-            # return
             raise LoaderException(err)
 
         try:
@@ -63,17 +62,9 @@ class MinioLoader:
         )
         return {"name": result.object_name, "etag": result.etag, "size": size}
 
-    def list_source_buckets(self) -> list[dict]:
-        buckets = self.source_minio.list_buckets()
-        return [{"name": bucket.name, "created_at": bucket.creation_date} for bucket in buckets]
-
-    def list_destination_buckets(self) -> list[dict]:
-        buckets = self.destination_minio.list_buckets()
-        return [{"name": bucket.name, "created_at": bucket.creation_date} for bucket in buckets]
-
     def check_source(self) -> bool:
         try:
-            self.list_source_buckets()
+            self.source_minio.bucket_exists("movies")
         except HTTPError:
             return False
 
@@ -81,14 +72,14 @@ class MinioLoader:
 
     def check_destination(self) -> bool:
         try:
-            self.list_destination_buckets()
+            self.destination_minio.bucket_exists("movies")
         except HTTPError:
             return False
 
         return True
 
 
-def copy_file(file_name: str, source: str, destination: str) -> dict:
+def copy_file(file_name: str, source: str, destination: str) -> dict[str, str]:
     loader = MinioLoader(source, destination, settings.ACCESS_KEY, settings.SECRET_KEY)
     if not loader.check_source():
         return {"error": "source check error"}
@@ -104,7 +95,7 @@ def copy_file(file_name: str, source: str, destination: str) -> dict:
     return result
 
 
-def delete_file(file_name: str, storage: str) -> dict:
+def delete_file(file_name: str, storage: str) -> dict[str, str]:
     minio = Minio(storage, access_key=settings.ACCESS_KEY, secret_key=settings.SECRET_KEY, secure=False)
     try:
         # Ругнется если не будет файла.
