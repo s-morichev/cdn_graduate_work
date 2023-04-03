@@ -77,3 +77,11 @@ services:
   prometheus:
     ports:
       - "9090:9090"
+
+  admin_movies:
+    ports:
+      - "${DJANGO_MOVIES_PORT}:8000"
+
+  postgres_movies:
+    ports:
+      - "5436:5432"

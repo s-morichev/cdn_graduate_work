@@ -217,8 +217,6 @@ services:
     volumes:
       - postgres_movies_data:/var/lib/postgresql/data/
       - ./movies_admin/config/sql/init_db.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5436:5432"
     restart: always
     environment:
       - POSTGRES_USER=${PG_MOVIES_USER}
@@ -237,10 +235,8 @@ services:
     restart: always
     env_file:
       - .env
-    ports:
-      - "${DJANGO_MOVIES_PORT}:8000"
     links:
-      - "minio_0:minio0"
+      - "minio-0:minio0"
     depends_on:
       - postgres_movies
       - minio_0
@@ -250,7 +246,7 @@ services:
     depends_on:
       - minio_0
     links:
-      - "minio_0:minio0"
+      - "minio-0:minio0"
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc config host add myminio http://minio0:9000 user password;
