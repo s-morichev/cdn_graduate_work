@@ -139,16 +139,19 @@ services:
         soft: 65536
         hard: 65536
 
-  minio_0:
+  minio-0:
     image: minio/minio:RELEASE.2023-03-24T21-41-23Z
     command: server --console-address ":9001" /data/
     environment:
      MINIO_ROOT_USER: ${MINIO_USER}
      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+     MINIO_PROMETHEUS_AUTH_TYPE: jwt
+     MINIO_PROMETHEUS_URL: prometheus:9000
+     MINIO_PROMETHEUS_JOB_ID: minio-job
     volumes:
      - minio_0_data:/data
 
-  nginx_minio_0:
+  nginx-minio-0:
     image: nginx:1.23.3-alpine
     volumes:
       - ./nginx/s3_proxy/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -156,18 +159,21 @@ services:
     ports:
       - "7000:80"
     depends_on:
-      - minio_0
+      - minio-0
 
-  minio_1:
+  minio-1:
     image: minio/minio:RELEASE.2023-03-24T21-41-23Z
     command: server --console-address ":9001" /data/
     environment:
      MINIO_ROOT_USER: ${MINIO_USER}
      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+     MINIO_PROMETHEUS_AUTH_TYPE: jwt
+     MINIO_PROMETHEUS_URL: prometheus:9000
+     MINIO_PROMETHEUS_JOB_ID: minio-job
     volumes:
      - minio_1_data:/data
 
-  nginx_minio_1:
+  nginx-minio-1:
     image: nginx:1.23.3-alpine
     volumes:
       - ./nginx/s3_proxy/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -175,18 +181,21 @@ services:
     ports:
       - "7010:80"
     depends_on:
-      - minio_1
+      - minio-1
 
-  minio_2:
+  minio-2:
     image: minio/minio:RELEASE.2023-03-24T21-41-23Z
     command: server --console-address ":9001" /data/
     environment:
      MINIO_ROOT_USER: ${MINIO_USER}
      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+     MINIO_PROMETHEUS_AUTH_TYPE: jwt
+     MINIO_PROMETHEUS_URL: prometheus:9000
+     MINIO_PROMETHEUS_JOB_ID: minio-job
     volumes:
      - minio_2_data:/data
 
-  nginx_minio_2:
+  nginx-minio-2:
     image: nginx:1.23.3-alpine
     volumes:
       - ./nginx/s3_proxy/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -194,7 +203,13 @@ services:
     ports:
       - "7020:80"
     depends_on:
-      - minio_2
+      - minio-2
+
+  prometheus:
+    image: prom/prometheus:v2.43.0
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/data
 
 volumes:
   zookeeper_1_data:
@@ -208,3 +223,4 @@ volumes:
   minio_0_data:
   minio_1_data:
   minio_2_data:
+  prometheus_data:
