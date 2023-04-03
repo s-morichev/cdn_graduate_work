@@ -245,8 +245,6 @@ services:
     restart: always
     env_file:
       - .env
-    links:
-      - "minio-0:minio0"
     depends_on:
       - postgres_movies
       - minio-0
@@ -255,8 +253,6 @@ services:
     image: minio/mc
     depends_on:
       - minio-0
-#    links:
-#      - "minio-0:minio0"
     entrypoint: >
       /bin/sh -c "
       until (/usr/bin/mc config host add myminio ${MINIO_MASTER_HOST} ${MINIO_USER} ${MINIO_PASSWORD}) do echo '...waiting...' && sleep 1; done;
@@ -272,8 +268,6 @@ services:
       dockerfile: ./docker/Dockerfile
       target: development
     container_name: load_service
-    ports:
-      - "8010:8000"
     command: uvicorn main:app --host 0.0.0.0 --reload
     env_file:
       - .env
@@ -300,8 +294,6 @@ services:
       target: development
     container_name: dashboard
     command: celery --broker=redis://redis:6379/0 flower
-    ports:
-      - "5555:5555"
     depends_on:
       - load-service
       - redis_load_service
@@ -316,8 +308,6 @@ services:
       context: ./cdn/routing_service/
       dockerfile: ./docker/Dockerfile
     container_name: routing_service
-    ports:
-      - "8008:8000"
     env_file:
       - .env
 

@@ -85,3 +85,15 @@ services:
   postgres_movies:
     ports:
       - "5436:5432"
+
+  load-service:
+    ports:
+      - "8010:8000"
+
+  dashboard:
+    ports:
+      - "5555:5555"
+
+  routing-service:
+    ports:
+      - "8008:8000"
