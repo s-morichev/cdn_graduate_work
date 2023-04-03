@@ -6,9 +6,9 @@ auth-init:
 	docker compose exec auth flask createsuperuser --email ${AUTH_SUPERUSER_LOGIN} --password ${AUTH_SUPERUSER_PASSWORD}
 
 admin-movies-init:
-	docker-compose exec admin_movies python manage.py migrate
-	docker-compose exec admin_movies python manage.py createsuperuser --noinput --username ${DJANGO_SUPERUSER_USERNAME} --email ${DJANGO_SUPERUSER_EMAIL}
-	docker-compose exec admin_movies python manage.py collectstatic --no-input
+	docker compose exec admin_movies python manage.py migrate
+	docker compose exec admin_movies python manage.py createsuperuser --noinput --username ${DJANGO_SUPERUSER_USERNAME} --email ${DJANGO_SUPERUSER_EMAIL}
+	docker compose exec admin_movies python manage.py collectstatic --no-input
 
 dev-run:
 	docker compose up --build -d
