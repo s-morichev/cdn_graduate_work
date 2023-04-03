@@ -6,6 +6,7 @@ services:
     volumes:
       - ./nginx/proxy/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/proxy/configs:/etc/nginx/conf.d:ro
+      - static_value:/code/static/:ro
     ports:
       - "80:80"
     depends_on:
