@@ -4,13 +4,13 @@
 
 1. Применить миграции
 ```
-docker-compose exec admin_movies python manage.py migrate
+docker compose exec admin_movies python manage.py migrate
 ```
 2. Создать суперпользователя
 ```
-docker-compose exec admin_notifications python manage.py createsuperuser
+docker compose exec admin_movies python manage.py createsuperuser
 ```
 3. Загрузить статические файлы
 ```
-docker-compose exec admin_notifications python manage.py collectstatic --no-input
+docker compose exec admin_movies python manage.py collectstatic --no-input
 ```
