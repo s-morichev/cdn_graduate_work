@@ -268,7 +268,7 @@ services:
       dockerfile: ./docker/Dockerfile
       target: development
     container_name: load_service
-    command: uvicorn main:app --host 0.0.0.0 --reload
+    command: /bin/bash -c "uvicorn main:app --host 0.0.0.0 --reload"
     env_file:
       - .env
     depends_on:
