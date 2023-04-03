@@ -6,7 +6,7 @@ from etl_ugc import ETL
 
 import tests.source_root  # noqa F401 - прогружает путь до /src/....
 from extractor import KafkaBroker
-from loader import Clickhouse
+from core.s3 import Clickhouse
 from storage import KafkaStorage
 from transformer import KafkaTransformer
 

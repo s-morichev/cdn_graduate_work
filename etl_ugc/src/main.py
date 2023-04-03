@@ -7,7 +7,7 @@ import logging_config  # noqa
 from config import consumer_config, settings
 from etl import ETL
 from extractor import KafkaBroker
-from loader import Clickhouse
+from core.s3 import Clickhouse
 from pre_start import create_kafka_topics, init_db
 from sentry import init_sentry
 from storage import KafkaStorage

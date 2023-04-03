@@ -138,3 +138,5 @@ auth/.env.test.local
 /auth/.env.test.local
 /prometheus/.minio_jwt
 
+/cdn/load_service/.env.local
+/cdn/load_service/.env.s3ls
