@@ -255,15 +255,14 @@ services:
     image: minio/mc
     depends_on:
       - minio-0
-    links:
-      - "minio-0:minio0"
+#    links:
+#      - "minio-0:minio0"
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc config host add myminio http://minio0:9000 user password;
+      until (/usr/bin/mc config host add myminio ${MINIO_MASTER_HOST} ${MINIO_USER} ${MINIO_PASSWORD}) do echo '...waiting...' && sleep 1; done;
       /usr/bin/mc admin info myminio;
-      /usr/bin/mc rm -r --force myminio/online-movies;
-      /usr/bin/mc mb myminio/online-movies;
-      /usr/bin/mc policy download myminio/online-movies;
+      /usr/bin/mc mb --ignore-existing myminio/${MOVIES_BUCKET};
+      /usr/bin/mc policy download myminio/${MOVIES_BUCKET};
       exit 0;
       "
 
