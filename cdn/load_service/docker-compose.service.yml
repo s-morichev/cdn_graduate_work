@@ -1,0 +1,54 @@
+name: s3-load-service
+services:
+    web:
+      build:
+        dockerfile: ./docker/Dockerfile
+        target: development
+      container_name: api
+      ports:
+        - "8000:8000"
+      command: uvicorn main:app --host 0.0.0.0 --reload
+      env_file:
+        - .env.s3ls
+
+      #volumes:
+      #  - ./src:/opt/app
+      depends_on:
+        - redis
+
+    worker:
+      build:
+        dockerfile: ./docker/Dockerfile
+        target: development
+      container_name: celery_worker
+      command: celery -A workers.worker.celery worker --loglevel=info
+      env_file:
+        - .env.s3ls
+      #volumes:
+      #  - ./src:/opt/app
+      depends_on:
+        - web
+        - redis
+
+
+
+    dashboard:
+        build:
+          dockerfile: ./docker/Dockerfile
+          target: development
+        container_name: dashboard
+        command: celery --broker=redis://redis:6379/0 flower
+        ports:
+          - "5555:5555"
+        depends_on:
+          - web
+          - redis
+          - worker
+
+    redis:
+      image: redis:7.0.10-alpine
+      container_name: redis
+
+networks:
+  default:
+    name: s3-network
