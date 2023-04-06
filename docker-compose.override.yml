@@ -97,3 +97,7 @@ services:
   routing-service:
     ports:
       - "8008:8000"
+
+  sync-service:
+    ports:
+      - "8010:8000"

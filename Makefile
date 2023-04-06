@@ -25,3 +25,14 @@ lint:
 	black --check .
 	isort --check-only .
 	flake8 .
+
+
+run-test-db:
+	docker run --env POSTGRES_USER=user --env POSTGRES_PASSWORD=password --env POSTGRES_DB=test_database \
+    	--name test_postgres -p 45432:5432 -d postgres:15.1-alpine
+
+test-sync:
+	pytest -s ./cdn/sync_service/app/tests
+
+stop-test-db:
+	docker rm --force test_postgres

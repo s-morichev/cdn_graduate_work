@@ -311,6 +311,27 @@ services:
     env_file:
       - .env
 
+  sync-service:
+    build:
+      context: ./cdn/sync_service/
+      dockerfile: ./docker/Dockerfile
+    container_name: sync_service
+    env_file:
+      - .env
+    depends_on:
+      - postgres_sync
+
+  postgres_sync:
+    image: postgres:15.1-alpine
+    container_name: postgres_sync
+    volumes:
+      - postgres_sync_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${PG_SYNC_USER}
+      - POSTGRES_PASSWORD=${PG_SYNC_PASSWORD}
+      - POSTGRES_DB=${PG_SYNC_DB_NAME}
+
+
 volumes:
   zookeeper_1_data:
   broker_1_data:
@@ -327,3 +348,4 @@ volumes:
   media_value:
   postgres_movies_data:
   prometheus_data:
+  postgres_sync_data:
