@@ -3,13 +3,14 @@ import socket
 
 import asyncpg
 import backoff
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import settings
 from app.db.base_class import Base
 
 # нужно импортировать модели, чтобы алхимия знала о них
-from app.models.models import Film, FilmS3Storage, S3Storage  # noqa
+from app.models.models import Film, S3Storage, films_s3storages  # noqa
 
 engine = create_async_engine(settings.SQLALCHEMY_DATABASE_URI, echo=settings.DEBUG)
 async_session = async_sessionmaker(bind=engine, expire_on_commit=False)
@@ -28,6 +29,16 @@ async def check_connection():
         pass
 
 
+async def add_storages(session: AsyncSession):
+    for s3_settings in settings.S3_SETTINGS:
+        storage = S3Storage(url=s3_settings.url, ip_address=s3_settings.ip, size_bytes=s3_settings.size)
+        session.add(storage)
+        try:
+            await session.commit()
+        except IntegrityError:
+            await session.rollback()
+
+
 async def recreate_tables(session: AsyncSession):
     conn = await session.connection()
     await conn.run_sync(Base.metadata.drop_all)
@@ -40,6 +51,7 @@ async def init_db():
     async with async_session() as session:
         # пересоздаем таблицы при каждом рестарте, пока нет миграций
         await recreate_tables(session)
+        await add_storages(session)
 
 
 async def stop_db():

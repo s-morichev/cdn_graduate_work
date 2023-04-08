@@ -8,7 +8,10 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import schemas
+from app.core.config import settings
+from app.db.session import add_storages
 from app.models.models import S3Storage
+from app.services.s3storage_service import s3storage_service
 
 pytestmark = pytest.mark.asyncio
 
@@ -88,3 +91,16 @@ async def test_delete_storage(client: AsyncClient, clear_s3storage_table):
     response = await client.delete(f"api/v1/storages/{storage_id}")
     assert response.status_code == HTTPStatus.OK
     assert response.json()["id"] == storage_id
+
+
+async def test_get_master_storage(session: AsyncSession):
+    await add_storages(session)
+    master = await s3storage_service.get_master_storage(session)
+    assert master.url == settings.S3_MASTER_URL
+
+
+async def test_get_storage_by_ip(session: AsyncSession):
+    storage_ip = settings.S3_SETTINGS[-1].ip
+    await add_storages(session)
+    storage = await s3storage_service.get_storage_by_ip(session, storage_ip)
+    assert storage.ip_address == storage_ip

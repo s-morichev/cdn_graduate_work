@@ -152,6 +152,9 @@ services:
      MINIO_PROMETHEUS_AUTH_TYPE: jwt
      MINIO_PROMETHEUS_URL: prometheus:9000
      MINIO_PROMETHEUS_JOB_ID: minio-job
+     MINIO_NOTIFY_WEBHOOK_ENABLE_syncmovie: on
+     MINIO_NOTIFY_WEBHOOK_ENDPOINT_syncmovie: http://sync-service:8000/api/v1/films/events
+     MINIO_NOTIFY_WEBHOOK_QUEUE_DIR_syncmovie: /minio_events
     volumes:
      - minio_0_data:/data
 
@@ -256,9 +259,10 @@ services:
     entrypoint: >
       /bin/sh -c "
       until (/usr/bin/mc config host add myminio ${MINIO_MASTER_HOST} ${MINIO_USER} ${MINIO_PASSWORD}) do echo '...waiting...' && sleep 1; done;
-      /usr/bin/mc admin info myminio;
       /usr/bin/mc mb --ignore-existing myminio/${MOVIES_BUCKET};
       /usr/bin/mc policy download myminio/${MOVIES_BUCKET};
+      /usr/bin/mc event add myminio/${MOVIES_BUCKET} arn:minio:sqs::syncmovie:webhook --event put delete;
+      /usr/bin/mc admin info myminio;
       exit 0;
       "
 

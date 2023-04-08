@@ -12,6 +12,34 @@ from app.services.s3storage_service import s3storage_service
 router = APIRouter()
 
 
+@router.post("/events", status_code=HTTPStatus.OK)
+async def process_s3_event(
+    request: Request,
+    session: AsyncSession = Depends(deps.get_session),
+):
+    event = await request.json()
+    for record in event["Records"]:
+        film_id = record["s3"]["object"]["key"]
+        storage_ip = record["source"]["host"]
+        event_type = record["eventName"]
+
+        storage = await s3storage_service.get_storage_by_ip(session, storage_ip)
+        if not storage:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"Storage ip {storage_ip} not found")
+
+        if event_type.startswith("s3:ObjectCreated"):
+            film_size = record["s3"]["object"]["size"]
+            await film_service.add_film_to_storage(session, film_id, film_size, storage)
+        if event_type.startswith("s3:ObjectRemoved"):
+            await film_service.delete_from_storage(session, film_id, storage)
+
+
+@router.get("/{film_id}/storages", response_model=list[schemas.S3Storage])
+async def read_film_storages(film_id: UUID, session: AsyncSession = Depends(deps.get_session)):
+    s3storages = await s3storage_service.read_multi_by_film(session, film_id)
+    return s3storages
+
+
 @router.post("", response_model=schemas.Film, status_code=HTTPStatus.CREATED)
 async def create_film(
     film_in: schemas.FilmCreate,
@@ -19,23 +47,6 @@ async def create_film(
 ):
     film = await film_service.create(session, obj_in=film_in)
     return film
-
-
-@router.post("/event/create", status_code=HTTPStatus.CREATED)
-async def create_film(
-    request: Request,
-    session: AsyncSession = Depends(deps.get_session),
-):
-    event = await request.json()
-    import json
-
-    print(json.dumps(event, indent=2))
-
-
-@router.get("/{film_id}/storages", response_model=list[schemas.S3Storage])
-async def read_film_storages(film_id: UUID, session: AsyncSession = Depends(deps.get_session)):
-    s3storages = await s3storage_service.read_multi_by_film(session, id=film_id)
-    return s3storages
 
 
 @router.delete("/{film_id}")

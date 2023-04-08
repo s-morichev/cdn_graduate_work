@@ -1,7 +1,7 @@
 from uuid import uuid4
 
-from sqlalchemy import BigInteger, ForeignKey, String, Uuid
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import BigInteger, Column, ForeignKey, String, Table, Uuid
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base_class import Base
 
@@ -17,16 +17,19 @@ class S3Storage(Base):
         return f"<S3Storage {self.url}>"
 
 
-class FilmS3Storage(Base):
-    __tablename__ = "films_s3storages"
-    film_id: Mapped[Uuid] = mapped_column(ForeignKey("films.id", ondelete="CASCADE"), primary_key=True)
-    s3storage_id: Mapped[Uuid] = mapped_column(ForeignKey("s3storages.id", ondelete="CASCADE"), primary_key=True)
+films_s3storages = Table(
+    "films_s3storages",
+    Base.metadata,
+    Column("film_id", ForeignKey("films.id", ondelete="CASCADE"), primary_key=True),
+    Column("s3storage_id", ForeignKey("s3storages.id", ondelete="CASCADE"), primary_key=True),
+)
 
 
 class Film(Base):
     __tablename__ = "films"
     id: Mapped[Uuid] = mapped_column(Uuid, primary_key=True)
     size_bytes: Mapped[int] = mapped_column(BigInteger)
+    storages: Mapped[list[S3Storage]] = relationship(secondary=films_s3storages, lazy="raise")
 
     def __repr__(self):
         return f"<Film {self.id}>"

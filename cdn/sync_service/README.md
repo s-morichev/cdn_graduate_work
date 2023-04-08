@@ -1,7 +1,7 @@
 
 ### Запуск
 
-docker compose up -d --build sync-service
+docker compose up -d --build sync-service minio-0 createbuckets
 
 
 ### Тесты
