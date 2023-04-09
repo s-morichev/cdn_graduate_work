@@ -25,3 +25,7 @@ class Film(FilmBase):
     """Схема для возврата из API."""
 
     id: UUID
+
+
+class FilmSync(Film):
+    score: float

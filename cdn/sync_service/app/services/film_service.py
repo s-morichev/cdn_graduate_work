@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.models import Film, S3Storage
+from app.models.models import Film, S3Storage, films_s3storages
 from app.schemas import FilmCreate, FilmUpdate
 from app.services.crud_base import CRUDBase
 
@@ -43,6 +43,12 @@ class FilmService(CRUDBase[Film, FilmCreate, FilmUpdate]):
         film.storages.remove(storage)
         await session.commit()
         return film
+
+    async def get_films_by_storage(self, session: AsyncSession, storage_url: str):
+        result = await session.execute(
+            select(self.model).join(films_s3storages).filter(films_s3storages.c.storage_id == storage_url)
+        )
+        return result.scalars().all()
 
 
 film_service = FilmService(Film)

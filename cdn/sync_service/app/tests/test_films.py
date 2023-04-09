@@ -1,23 +1,14 @@
 from http import HTTPStatus
 
 import pytest
-import pytest_asyncio
 from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
-from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import add_storages
-from app.models.models import S3Storage
 from app.tests import constants
 
 pytestmark = pytest.mark.asyncio
-
-
-@pytest_asyncio.fixture
-async def clear_s3storage_table(session: AsyncSession):
-    await session.execute(delete(S3Storage))
-    await session.commit()
 
 
 async def test_events(client: AsyncClient, session: AsyncSession):

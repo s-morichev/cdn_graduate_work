@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     DEBUG: bool = Field(True, env="SYNC_DEBUG")
     S3_SETTINGS: list[S3Settings] = Field(..., env="SYNC_S3_HOSTS")
     S3_MASTER_URL: str = None
+    S3_FREE_SPACE_LIMIT: int = Field(..., env="SYNC_S3_FREE_SPACE_LIMIT")
+    SYNC_HTTP_PATH: str = "/api/v1/sync"
     SQLALCHEMY_DATABASE_URI: str = Field(
         ...,
         env="PG_SYNC_DSN",
