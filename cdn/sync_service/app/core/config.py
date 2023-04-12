@@ -1,4 +1,4 @@
-from pydantic import BaseModel, BaseSettings, Field, root_validator, validator
+from pydantic import BaseModel, BaseSettings, Field, validator
 
 
 class S3Settings(BaseModel):

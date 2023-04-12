@@ -5,6 +5,7 @@ import pytest
 import pytest_asyncio
 from dotenv import load_dotenv
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # Для запуска тестов на хосте явно загружаем переменные окружения
 # из .env.test в корневой папке до импорта приложения, так как pytest сам по умолчанию
@@ -31,8 +32,11 @@ async def session():
         yield session_
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="module", autouse=True)
+async def delete_and_make_tables(session: AsyncSession):
+    await recreate_tables(session)
+
+
+@pytest_asyncio.fixture(scope="session")
 async def client() -> AsyncClient:
-    async with async_session() as session:
-        await recreate_tables(session)
     return AsyncClient(app=app, base_url="http://localhost:8000")

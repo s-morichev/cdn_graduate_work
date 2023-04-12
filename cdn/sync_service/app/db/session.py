@@ -31,7 +31,9 @@ async def check_connection():
 
 async def add_storages(session: AsyncSession):
     for s3_settings in settings.S3_SETTINGS:
-        storage = S3Storage(id=s3_settings.id, url=s3_settings.url, ip_address=s3_settings.ip, size_bytes=s3_settings.size)
+        storage = S3Storage(
+            id=s3_settings.id, url=s3_settings.url, ip_address=s3_settings.ip, size_bytes=s3_settings.size
+        )
         session.add(storage)
         try:
             await session.commit()

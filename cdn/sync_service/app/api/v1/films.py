@@ -31,7 +31,7 @@ async def process_s3_event(
             film_size = record["s3"]["object"]["size"]
             await film_service.add_film_to_storage(session, film_id, film_size, storage)
         if event_type.startswith("s3:ObjectRemoved"):
-            await film_service.delete_from_storage(session, film_id, storage)
+            await film_service.delete_film_from_storage(session, film_id, storage)
 
 
 @router.get("/{film_id}/storages", response_model=list[schemas.S3Storage])

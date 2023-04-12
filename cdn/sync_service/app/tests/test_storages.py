@@ -23,25 +23,36 @@ async def clear_s3storage_table(session: AsyncSession):
 
 
 async def test_create_storage(client: AsyncClient):
-    storage = schemas.S3StorageCreate(id="test", url="http://test.com", ip_address="111.111.111.111", size_bytes=2**50)
+    storage = schemas.S3StorageCreate(
+        id="test", url="http://test.com", ip_address="111.111.111.111", size_bytes=2**50
+    )
     response = await client.post(
         "api/v1/storages",
         json=jsonable_encoder(storage),
     )
     assert response.status_code == HTTPStatus.CREATED
-    assert response.json() == {"id":"test", "url":"http://test.com", "ip_address":"111.111.111.111", "size_bytes": 2**50}
+    assert response.json() == {
+        "id": "test",
+        "url": "http://test.com",
+        "ip_address": "111.111.111.111",
+        "size_bytes": 2**50,
+    }
     # assert response.json()["url"] == "http://test.com"
     # assert response.json()["ip_address"] == "111.111.111.111"
     # assert response.json()["size_bytes"] == 2**50
 
 
 async def test_read_multiple_storages(client: AsyncClient, clear_s3storage_table):
-    storage = schemas.S3StorageCreate(id="test1", url="http://test1.com", ip_address="111.111.111.111", size_bytes=2**50)
+    storage = schemas.S3StorageCreate(
+        id="test1", url="http://test1.com", ip_address="111.111.111.111", size_bytes=2**50
+    )
     await client.post(
         "api/v1/storages",
         json=jsonable_encoder(storage),
     )
-    storage = schemas.S3StorageCreate(id="test2", url="http://test2.com", ip_address="222.222.222.222", size_bytes=2**50)
+    storage = schemas.S3StorageCreate(
+        id="test2", url="http://test2.com", ip_address="222.222.222.222", size_bytes=2**50
+    )
     await client.post(
         "api/v1/storages",
         json=jsonable_encoder(storage),
@@ -52,7 +63,9 @@ async def test_read_multiple_storages(client: AsyncClient, clear_s3storage_table
 
 
 async def test_read_storage(client: AsyncClient, clear_s3storage_table):
-    storage = schemas.S3StorageCreate(id="test", url="http://test.com", ip_address="111.111.111.111", size_bytes=2**50)
+    storage = schemas.S3StorageCreate(
+        id="test", url="http://test.com", ip_address="111.111.111.111", size_bytes=2**50
+    )
     response = await client.post(
         "api/v1/storages",
         json=jsonable_encoder(storage),
@@ -64,7 +77,9 @@ async def test_read_storage(client: AsyncClient, clear_s3storage_table):
 
 
 async def test_update_storage(client: AsyncClient, clear_s3storage_table):
-    storage = schemas.S3StorageCreate(id="test", url="http://test.com", ip_address="111.111.111.111", size_bytes=2**50)
+    storage = schemas.S3StorageCreate(
+        id="test", url="http://test.com", ip_address="111.111.111.111", size_bytes=2**50
+    )
     response = await client.post(
         "api/v1/storages",
         json=jsonable_encoder(storage),
@@ -83,7 +98,9 @@ async def test_update_storage(client: AsyncClient, clear_s3storage_table):
 
 
 async def test_delete_storage(client: AsyncClient, clear_s3storage_table):
-    storage = schemas.S3StorageCreate(id="test", url="http://test.com", ip_address="111.111.111.111", size_bytes=2**50)
+    storage = schemas.S3StorageCreate(
+        id="test", url="http://test.com", ip_address="111.111.111.111", size_bytes=2**50
+    )
     response = await client.post(
         "api/v1/storages",
         json=jsonable_encoder(storage),

@@ -11,7 +11,7 @@ from app.tests import constants
 pytestmark = pytest.mark.asyncio
 
 
-async def test_events(client: AsyncClient, session: AsyncSession):
+async def test_put_events(client: AsyncClient, session: AsyncSession):
     await add_storages(session)
     response = await client.post(
         "api/v1/films/events",
