@@ -14,18 +14,23 @@ class FilmService(CRUDBase[Film, FilmCreate, FilmUpdate]):
         self,
         session: AsyncSession,
         film_id: UUID,
-        film_size_bytes: int,
         storage: S3Storage,
+        film_size_bytes: int | None = None,
     ) -> Film | None:
         result = await session.execute(
             select(self.model).filter(self.model.id == film_id).options(selectinload(self.model.storages))
         )
         film = result.scalar_one_or_none()
-        if film:
-            film.storages.append(storage)
-        else:
+        if not film and film_size_bytes is not None:
+            # добавляем новый фильм
             film = self.model(id=film_id, size_bytes=film_size_bytes, storages=[storage])
             session.add(film)
+        elif not film and film_size_bytes is None:
+            # для нового фильма обязательно нужен размер
+            return None
+        else:
+            # добавляем существующий фильм в хранилище
+            film.storages.append(storage)
 
         await session.commit()
         return film

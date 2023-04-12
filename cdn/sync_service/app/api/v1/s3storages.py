@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import schemas
 from app.api import deps
+from app.services.film_service import film_service
 from app.services.s3storage_service import s3storage_service
 
 router = APIRouter()
@@ -55,3 +56,16 @@ async def delete_storage(
     if not s3storage:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="S3 Storage not found")
     return s3storage
+
+
+@router.post("/{storage_id}/events")
+async def process_event(storage_id: str, event: schemas.Event, session: AsyncSession = Depends(deps.get_session)):
+    s3storage = await s3storage_service.delete(session, id=storage_id)
+    if not s3storage:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="S3 Storage not found")
+
+    for action in event.actions:
+        if action.action == "UPLOAD":
+            film = await film_service.add_film_to_storage(session, action.movie_id, s3storage)
+            if not film:
+                raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Film not found")

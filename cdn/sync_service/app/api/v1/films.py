@@ -29,7 +29,7 @@ async def process_s3_event(
 
         if event_type.startswith("s3:ObjectCreated"):
             film_size = record["s3"]["object"]["size"]
-            await film_service.add_film_to_storage(session, film_id, film_size, storage)
+            await film_service.add_film_to_storage(session, film_id, storage, film_size)
         if event_type.startswith("s3:ObjectRemoved"):
             await film_service.delete_film_from_storage(session, film_id, storage)
 
