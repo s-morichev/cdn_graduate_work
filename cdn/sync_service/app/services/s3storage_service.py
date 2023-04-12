@@ -17,7 +17,7 @@ class S3StorageService(CRUDBase[S3Storage, S3StorageCreate, S3StorageUpdate]):
         return result.scalars().all()
 
     async def get_master_storage(self, session: AsyncSession) -> S3Storage:
-        result = await session.execute(select(self.model).filter(self.model.url == settings.S3_MASTER_URL))
+        result = await session.execute(select(self.model).filter(self.model.id == settings.S3_MASTER_ID))
         return result.scalars().one()
 
     async def get_storage_by_ip(self, session: AsyncSession, storage_ip: str) -> S3Storage | None:

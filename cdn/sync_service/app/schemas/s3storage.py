@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from pydantic import AnyHttpUrl, IPvAnyAddress
 
 from app.schemas.base_class import BaseSchema
@@ -8,6 +6,7 @@ from app.schemas.base_class import BaseSchema
 class S3StorageBase(BaseSchema):
     """Общие свойства схем."""
 
+    id: str
     url: AnyHttpUrl
     ip_address: IPvAnyAddress
     size_bytes: int
@@ -30,4 +29,4 @@ class S3StorageUpdate(BaseSchema):
 class S3Storage(S3StorageBase):
     """Схема для возврата из API."""
 
-    id: UUID
+    pass

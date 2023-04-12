@@ -27,7 +27,7 @@ async def create_storage(
 
 
 @router.get("/{s3storage_id}", response_model=schemas.S3Storage)
-async def read_storage(s3storage_id: UUID, session: AsyncSession = Depends(deps.get_session)):
+async def read_storage(s3storage_id: str, session: AsyncSession = Depends(deps.get_session)):
     s3storage = await s3storage_service.read(session, id=s3storage_id)
     if not s3storage:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="S3 Storage not found")
@@ -36,7 +36,7 @@ async def read_storage(s3storage_id: UUID, session: AsyncSession = Depends(deps.
 
 @router.patch("/{s3storage_id}")
 async def update_storage(
-    s3storage_id: UUID,
+    s3storage_id: str,
     s3storage_in: schemas.S3StorageUpdate,
     session: AsyncSession = Depends(deps.get_session),
 ):
@@ -49,7 +49,7 @@ async def update_storage(
 
 @router.delete("/{s3storage_id}")
 async def delete_storage(
-    s3storage_id: UUID,
+    s3storage_id: str,
     session: AsyncSession = Depends(deps.get_session),
 ):
     s3storage = await s3storage_service.delete(session, id=s3storage_id)
