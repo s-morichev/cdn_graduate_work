@@ -6,8 +6,8 @@ services:
    container_name: minio_1
    command: server --console-address ":9001" /data/
    ports:
-     - "9000:9000"
-     - "9001:9001"
+     - "9010:9000"
+     - "9011:9001"
    environment:
      MINIO_ROOT_USER: root
      MINIO_ROOT_PASSWORD: 123456qwe
@@ -24,8 +24,8 @@ services:
    container_name: minio_2
    command: server --console-address ":9001" /data/
    ports:
-     - "19000:9000"
-     - "19001:9001"
+     - "9020:9000"
+     - "9021:9001"
    environment:
      MINIO_ROOT_USER: root
      MINIO_ROOT_PASSWORD: 123456qwe

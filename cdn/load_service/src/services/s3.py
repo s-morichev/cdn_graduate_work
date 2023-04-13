@@ -6,6 +6,8 @@ from urllib3.exceptions import HTTPError
 
 from core.config import settings
 
+"""Обертка над Minio для копирования и удаления"""
+
 
 class LoaderException(Exception):
     pass
@@ -14,15 +16,27 @@ class LoaderException(Exception):
 class MinioLoader:
     source_minio: Minio
     destination_minio: Minio
-    part_size = 10 * 1024 * 1024
+    part_size = 10 * 1024 * 1024  # для загрузки больших файлов по частям
     parallel_uploads = 4
 
     def __init__(self, source_host: str, destination_host: str, access_key: str, secret_key: str):
-        self.source_minio = Minio(source_host, access_key=access_key, secret_key=secret_key, secure=False)
-        self.destination_minio = Minio(destination_host, access_key=access_key, secret_key=secret_key, secure=False)
+        def split_host_uri(host: str) -> tuple[bool, str]:
+            """
+            выделяет из URL хост и схему
+            Так как Минио вместе со схемой не понимает путь
+            """
+            lst = host.split("://")
+            secure = (len(lst) == 2) and (lst[0] == "https")
+            return secure, lst[-1]
+
+        secure, host = split_host_uri(source_host)
+        self.source_minio = Minio(host, access_key=access_key, secret_key=secret_key, secure=secure)
+
+        secure, host = split_host_uri(destination_host)
+        self.destination_minio = Minio(host, access_key=access_key, secret_key=secret_key, secure=secure)
 
     def copy_file(
-        self, source_bucket: str, source_object: str, destination_bucket: str, destination_object: str
+            self, source_bucket: str, source_object: str, destination_bucket: str, destination_object: str
     ) -> dict:
         # 1 Получаем объект
         try:
@@ -89,6 +103,7 @@ def copy_file(file_name: str, source: str, destination: str) -> dict[str, str]:
 
     try:
         result = loader.copy_file(settings.BUCKET, file_name, settings.BUCKET, file_name)
+
     except LoaderException as err:
         return {"error": str(err)}
 
