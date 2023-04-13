@@ -10,6 +10,7 @@ class S3Settings(BaseModel):
 
 class Settings(BaseSettings):
     DEBUG: bool = Field(True, env="SYNC_DEBUG")
+    SECRET_KEY: str = Field("secret_key", env="SYNC_SECRET_KEY")
     S3_SETTINGS: list[S3Settings] = Field(..., env="SYNC_S3_HOSTS")
     S3_MASTER_ID: str = Field("master", env="SYNC_S3_MASTER_ID")
     S3_FREE_SPACE_LIMIT: int = Field(..., env="SYNC_S3_FREE_SPACE_LIMIT")

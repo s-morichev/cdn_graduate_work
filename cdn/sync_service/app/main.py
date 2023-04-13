@@ -1,11 +1,12 @@
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.responses import ORJSONResponse
 
 from app.api.v1 import api
 from app.core import logging_config  # noqa
+from app.core.security import check_auth_token
 from app.db.session import init_db, stop_db
 
 
@@ -21,6 +22,7 @@ app = FastAPI(
     openapi_url="/openapi.json",
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
+    dependencies=[Depends(check_auth_token)],
 )
 
 

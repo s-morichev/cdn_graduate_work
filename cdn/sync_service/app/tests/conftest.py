@@ -14,6 +14,7 @@ base_dir = Path(__file__).parent.parent.parent
 env_test = base_dir / ".env.test"
 load_dotenv(env_test, override=True)
 
+from app.core.config import settings  # noqa: E402
 from app.db.session import async_session  # noqa: E402
 from app.db.session import recreate_tables  # noqa: E402
 from app.main import app  # noqa: E402
@@ -39,4 +40,4 @@ async def delete_and_make_tables(session: AsyncSession):
 
 @pytest_asyncio.fixture(scope="session")
 async def client() -> AsyncClient:
-    return AsyncClient(app=app, base_url="http://localhost:8000")
+    return AsyncClient(app=app, base_url="http://localhost:8000", headers={"Authorization": settings.SECRET_KEY})
