@@ -69,3 +69,10 @@ async def process_event(storage_id: str, event: schemas.Event, session: AsyncSes
             film = await film_service.add_film_to_storage(session, action.movie_id, s3storage)
             if not film:
                 raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Film not found")
+
+
+@router.post("/storages/{storage_id}/heartbeat")
+async def storage_heartbeat(storage_id: str):
+    # TODO добавить отслеживание состояния хранилищ
+    # выдавать только живые хранилища
+    pass
