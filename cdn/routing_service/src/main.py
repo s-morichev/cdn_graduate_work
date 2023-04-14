@@ -8,27 +8,38 @@ from fastapi import Request
 
 from src.jwt_config import AccessTokenPayload, jwt_bearer
 from src.storages import ObjectStorageBase, StorageWorker
-from src.settings import settings
+from src.settings import settings, logger
 
 app = FastAPI()
 
 fake = Faker()
 
 
-@app.get("/get_media/{obj_name}")
-async def get_media(request: Request, obj_name: str | UUID,
-                    token_payload: AccessTokenPayload = Depends(jwt_bearer),
-                    ):
-    user_id = str(token_payload.sub)
-    try:
-        requests.post(f"{settings.ugc_service_url}/api/v1/record_film/{user_id}")
-    # TODO: обработать ошибку
-    except Exception:
-        pass
+async def get_ip_address(request: Request):
     if request.client.host == "127.0.0.1":
         ip_address = fake.ipv4()
     else:
         ip_address = request.client.host
+    return ip_address
+
+
+async def save_info_ugc_service(film_id, user_id):
+    try:
+        url = f"{settings.ugc_service_url}/api/v1/record_film/{film_id}"
+        data = {"user_id": user_id}
+        response = requests.post(url, json=data)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        logger.error(f"An error occurred while sending request to UGC service: {e}")
+
+
+@app.get("/get_media/{obj_name}")
+async def get_media(request: Request, obj_name: UUID,
+                    token_payload: AccessTokenPayload = Depends(jwt_bearer),
+                    ):
+    user_id = str(token_payload.sub)
+    await save_info_ugc_service(obj_name, user_id)
+    ip_address = await get_ip_address(request)
     storages = await storage_worker.get_storages(ip_address)
 
     for storage_info in storages:

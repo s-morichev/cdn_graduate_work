@@ -1,11 +1,12 @@
 import boto3
-import requests
-from requests.exceptions import ConnectionError
-from geopy.distance import distance
+import botocore.exceptions
 import geocoder
-from src.schemas import Storage
+import requests
+from geopy.distance import distance
+from requests.exceptions import ConnectionError
 
-from src.settings import settings
+from src.schemas import Storage
+from src.settings import settings, logger
 
 
 class ObjectStorageBase:
@@ -25,14 +26,15 @@ class ObjectStorageBase:
         # Пока сам создаю ведра, в будущем выпилить
         try:
             self.s3.create_bucket(Bucket=self.bucket)
-        except Exception:
-            pass
+        except botocore.exceptions.ClientError:
+            logger.info('Bucket already exists')
 
     def check_file(self, key):
         try:
             obj = self.s3.head_object(Bucket=self.bucket, Key=key)
             return obj
-        except Exception:
+        except botocore.exceptions.ClientError:
+            logger.info('Object does not exist')
             return
 
     def get_link_file(self, key):
@@ -50,9 +52,9 @@ class ObjectStorageBase:
 def get_example_storages():
     # Пример получения списка хранилищ из сервиса синхронизации
     return [
-        {"url": "http://localhost:9000/", "ip": "83.220.236.105"},
-        {"url": "http://localhost:90010/", "ip": "95.142.196.32"},
-        {"url": "http://localhost:90020/", "ip": "92.255.196.137"}
+        {"url": "http://localhost:9000/", "ip_address": "83.220.236.105"},
+        {"url": "http://localhost:90010/", "ip_address": "95.142.196.32"},
+        {"url": "http://localhost:90020/", "ip_address": "92.255.196.137"}
     ]
 
 
@@ -64,13 +66,14 @@ class StorageWorker:
             storages = requests.get(f"{settings.sync_service_url}/get_storages")
             storages = storages.json()
         except ConnectionError:
-            # TODO: Обработать ошибку, если сервис не доступен или не запущен
+            logger.error("Sync service is not available")
             storages = get_example_storages()
+            # return
         for storage in storages:
             self.cdn_storages.append(
                 Storage(
                     url=storage["url"],
-                    ip=storage["ip"],
+                    ip=storage["ip_address"],
                     access_key=settings.storage_access_key,
                     secret_key=settings.storage_secret_key
                 ))

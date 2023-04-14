@@ -47,11 +47,10 @@ async def add_movie_view(
 @router.post("/record_film/{film_id}",)
 async def record_movie_request(
         film_id,
+        user_id,
         db: AsyncIOMotorClient = Depends(get_session),
-        token_payload: AccessTokenPayload = Depends(jwt_bearer),
 ):
     collection = db["record_films"]
-    user_id = str(token_payload.sub)
     if await collection.find_one({"film_id": film_id, "user_id": user_id}):
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=f"Bookmark already exist")
     record_film = RecordFilm(film_id=film_id, user_id=user_id)

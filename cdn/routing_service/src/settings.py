@@ -1,3 +1,5 @@
+from logging import getLogger
+
 from pydantic import BaseSettings, Field
 
 
@@ -21,3 +23,5 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+logger = getLogger(__name__)
