@@ -240,8 +240,8 @@ services:
       dockerfile: ./Dockerfile
     command: /bin/bash -c "gunicorn --bind 0.0.0.0:8000 config.wsgi:application --threads 2 --timeout 600"
     volumes:
-      - static_value:/code/static/
-      - media_value:/code/media/
+      - static_value:/opt/app/static/
+      - media_value:/opt/app/media/
     restart: always
     env_file:
       - .env
@@ -269,6 +269,8 @@ services:
       target: development
     container_name: load_service
     command: /bin/bash -c "uvicorn main:app --host 0.0.0.0 --reload"
+    volumes:
+      - media_value:/opt/app/media/
     env_file:
       - .env
     depends_on:
@@ -281,6 +283,8 @@ services:
       target: development
     container_name: load_service_celery_worker
     command: celery -A workers.worker.celery worker --loglevel=info
+    volumes:
+      - media_value:/opt/app/media/
     env_file:
       - .env
     depends_on:
@@ -293,7 +297,7 @@ services:
       dockerfile: ./docker/Dockerfile
       target: development
     container_name: dashboard
-    command: celery --broker=redis://redis:6379/0 flower
+    command: celery --broker=redis://redis_load_service:6379/0 flower
     depends_on:
       - load-service
       - redis_load_service
@@ -311,6 +315,32 @@ services:
     env_file:
       - .env
 
+  redis_admin_movies:
+    image: redis:7.0.5-alpine
+    container_name: redis_admin_movies
+    volumes:
+      - redis_admin_movies_data:/data
+    restart: always
+    ports:
+      - "63791:6379"
+
+  admin_movies_worker:
+    container_name: admin_movies_worker
+    build:
+      context: ./movies_admin
+      dockerfile: ./Dockerfile
+    command: celery -A config.app.app worker -B --loglevel=DEBUG
+    volumes:
+      - worker_celery_data:/data
+      - media_value:/opt/app/media/
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - admin_movies
+      - redis_admin_movies
+      - postgres_movies
+
 volumes:
   zookeeper_1_data:
   broker_1_data:
@@ -327,3 +357,5 @@ volumes:
   media_value:
   postgres_movies_data:
   prometheus_data:
+  redis_admin_movies_data:
+  worker_celery_data:
