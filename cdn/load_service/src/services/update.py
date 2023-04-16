@@ -5,6 +5,7 @@ from core.config import settings
 from models.update import Updates
 from services.storage import storage
 from core.api_key import get_api_key_header
+
 """
 Функции для отправки данных на сервер синхронизации
 do_update() - проверяет список в редис, если там есть данные - отправляет на сервер
@@ -14,8 +15,20 @@ send_heartbeat() - отправляет ping на сервер
 """
 
 
-def no_changes():
-    return not storage.count()
+def post_message_to_server(url: str, message: dict) -> bool:
+    """
+    Отправляем POST на url с сообщением message (в json)
+    Если ответ 200 - возвращаем True
+    """
+    headers = get_api_key_header()
+    try:
+        response = httpx.post(url=url, headers=headers, json=message, timeout=1)
+        response.raise_for_status()
+
+    except httpx.HTTPError as err:
+        return False
+
+    return True
 
 
 @backoff.on_predicate(backoff.expo, max_tries=5)
@@ -24,19 +37,24 @@ def send_updates(updates: Updates) -> bool:
     Отправляет обновления на сервер синхронизации
     если все ОК - возвращает True
     """
-    url_str = settings.SYNC_URI
-    sync_url = url_str.format(storage_id=settings.HOME_STORAGE_ID)
-
+    sync_url = settings.SYNC_URI.format(storage_id=settings.HOME_STORAGE_ID)
     body = updates.dict()
-    headers = get_api_key_header()
-    try:
-        response = httpx.post(url=sync_url, headers=headers, json=body, timeout=1)
-        response.raise_for_status()
+    return post_message_to_server(sync_url, body)
 
-    except httpx.HTTPError as err:
-        return False
 
-    return True
+@backoff.on_predicate(backoff.expo, max_tries=3)
+def send_heartbeat() -> bool:
+    """Отправляет ping сообщение на sync сервер"""
+    if not settings.HEARTBEAT_URI:
+        return True
+
+    heartbeat_url = settings.HEARTBEAT_URI.format(storage_id=settings.HOME_STORAGE_ID)
+    heartbeat_message = {"ping": "pong"}
+    return post_message_to_server(heartbeat_url, heartbeat_message)
+
+
+def no_changes():
+    return not storage.count()
 
 
 def do_update() -> bool:
@@ -60,19 +78,3 @@ def do_update() -> bool:
         storage.delete(count)
 
     return result
-
-
-@backoff.on_predicate(backoff.expo, max_tries=3)
-def send_heartbeat() -> bool:
-    """Отправляет ping сообщение на sync сервер"""
-    if settings.HEARTBEAT_URI:
-        url = settings.HEARTBEAT_URI.format(storage_id=settings.HOME_STORAGE_ID)
-        headers = get_api_key_header()
-        try:
-            response = httpx.post(url=url, headers=headers, json={"ping": "pong"}, timeout=1)
-            response.raise_for_status()
-
-        except httpx.HTTPError as err:
-            return False
-
-    return True
