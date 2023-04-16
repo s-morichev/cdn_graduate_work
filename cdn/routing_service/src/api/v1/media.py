@@ -14,10 +14,9 @@ router = APIRouter(prefix="/media", tags=["media"], responses={404: {"descriptio
 async def get_media(
         request: Request,
         obj_name: UUID,
-        # token_payload: AccessTokenPayload = Depends(jwt_bearer),
+        token_payload: AccessTokenPayload = Depends(jwt_bearer),
 ):
-    # user_id = str(token_payload.sub)
-    user_id = 1
+    user_id = str(token_payload.sub)
     storage_worker = await get_storage_worker()
     await save_info_ugc_service(obj_name, user_id)
     ip_address = await get_ip_address(request)
