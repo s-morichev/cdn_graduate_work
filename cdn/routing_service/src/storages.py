@@ -1,9 +1,10 @@
+import aiohttp
+import backoff as backoff
 import boto3
 import botocore.exceptions
 import geocoder
 import requests
 from geopy.distance import distance
-from requests.exceptions import ConnectionError
 
 from src.schemas import Storage
 from src.settings import settings, logger
@@ -22,12 +23,6 @@ class ObjectStorageBase:
             aws_access_key_id=self.access_key,
             aws_secret_access_key=self.secret_key
         )
-
-        # Пока сам создаю ведра, в будущем выпилить
-        try:
-            self.s3.create_bucket(Bucket=self.bucket)
-        except botocore.exceptions.ClientError:
-            logger.info('Bucket already exists')
 
     def check_file(self, key):
         try:
@@ -49,26 +44,15 @@ class ObjectStorageBase:
         return url
 
 
-def get_example_storages():
-    # Пример получения списка хранилищ из сервиса синхронизации
-    return [
-        {"url": "http://localhost:9000/", "ip_address": "83.220.236.105"},
-        {"url": "http://localhost:90010/", "ip_address": "95.142.196.32"},
-        {"url": "http://localhost:90020/", "ip_address": "92.255.196.137"}
-    ]
-
-
 class StorageWorker:
     cdn_storages = []
 
-    def create_storage_list(self):
-        try:
-            storages = requests.get(f"{settings.sync_service_url}/get_storages")
-            storages = storages.json()
-        except ConnectionError:
-            logger.error("Sync service is not available")
-            storages = get_example_storages()
-            # return
+    @backoff.on_exception(backoff.expo, aiohttp.ClientError, max_tries=3)
+    async def create_storage_list(self):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"{settings.sync_service_url}/get_storages") as response:
+                response.raise_for_status()
+                storages = await response.json()
         for storage in storages:
             self.cdn_storages.append(
                 Storage(
@@ -81,11 +65,18 @@ class StorageWorker:
     async def get_storages(self, ip_address) -> list[dict]:
         user_geo = geocoder.ip(ip_address)
         storages = []
-        for i in range(len(self.cdn_storages)):
-            dist = distance(geocoder.ip(self.cdn_storages[i].ip).latlng, user_geo.latlng).km
+        if not self.cdn_storages:
+            return storages
+        for storage in self.cdn_storages:
+            dist = distance(geocoder.ip(storage.ip).latlng, user_geo.latlng).km
             storages.append(
                 {
-                    "storage": self.cdn_storages[i],
+                    "storage": ObjectStorageBase(
+                        endpoint_url=storage.url,
+                        access_key=storage.access_key,
+                        secret_key=storage.secret_key,
+                        bucket=settings.bucket
+                    ),
                     "distance": dist
                 }
             )
