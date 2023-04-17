@@ -10,11 +10,15 @@ admin-movies-init:
 	docker compose exec admin_movies python manage.py createsuperuser --noinput --username ${DJANGO_SUPERUSER_USERNAME} --email ${DJANGO_SUPERUSER_EMAIL}
 	docker compose exec admin_movies python manage.py collectstatic --no-input
 
+sync-init:
+	docker compose exec sync-service alembic upgrade head
+
 dev-run:
 	docker compose up --build -d
 	sleep 5  # ждем запуск постгрес для применения миграций
 	$(MAKE) auth-init
 	$(MAKE) admin-movies-init
+	$(MAKE) sync-init
 	docker compose exec auth python fake_data.py
 
 format:

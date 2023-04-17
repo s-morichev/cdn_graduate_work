@@ -51,8 +51,7 @@ async def recreate_tables(session: AsyncSession):
 async def init_db():
     await check_connection()
     async with async_session() as session:
-        # пересоздаем таблицы при каждом рестарте, пока нет миграций
-        await recreate_tables(session)
+        # добавляем хранилища в базу
         await add_storages(session)
 
 

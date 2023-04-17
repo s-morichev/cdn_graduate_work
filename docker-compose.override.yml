@@ -111,6 +111,10 @@ services:
     ports:
       - "8012:8000"
 
+  postgres_sync:
+    ports:
+      - "${PG_SYNC_PORT}:5432"
+
 networks:
   default:
     driver: bridge
