@@ -10,3 +10,10 @@ class DTOViewEvent(CoreModel):
     film_id: UUID
     pos_start: int  # начало просмотра фильма, время в секундах от начала фильма
     pos_end: int  # конец просмотра фильма, время в секундах от начала фильма
+
+
+class RecordMovie(CoreModel):
+    """Модель для события запроса фильма"""
+
+    user_id: UUID
+    film_id: UUID
