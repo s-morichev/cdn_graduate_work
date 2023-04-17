@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from urllib.parse import urlparse
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -20,7 +21,8 @@ async def process_s3_event(
     event = await request.json()
     for record in event["Records"]:
         film_id = record["s3"]["object"]["key"]
-        storage_ip = record["source"]["host"]
+        storage_url = record['responseElements']['x-minio-origin-endpoint']
+        storage_ip = urlparse(storage_url).netloc.split(":")[0]
         event_type = record["eventName"]
 
         storage = await s3storage_service.get_storage_by_ip(session, storage_ip)
