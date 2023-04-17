@@ -60,7 +60,7 @@ async def delete_storage(
 
 @router.post("/{storage_id}/events")
 async def process_event(storage_id: str, event: schemas.Event, session: AsyncSession = Depends(deps.get_session)):
-    s3storage = await s3storage_service.delete(session, id=storage_id)
+    s3storage = await s3storage_service.read(session, id=storage_id)
     if not s3storage:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="S3 Storage not found")
 
