@@ -2,7 +2,7 @@ FROM python:3.10
 
 LABEL author='valeriya.malysheva12@gmail.com' version=1
 
-WORKDIR /code
+WORKDIR /opt/app
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1

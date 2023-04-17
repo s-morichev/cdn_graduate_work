@@ -20,7 +20,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'movies.apps.MoviesConfig',
-    'storages',
 ]
 
 MIDDLEWARE = [
@@ -123,19 +122,21 @@ LOGGING = {
     },
 }
 
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-
-MINIO_ACCESS_KEY = os.getenv("MINIO_USER")
-MINIO_SECRET_KEY = os.getenv("MINIO_PASSWORD")
-MINIO_BUCKET_NAME = os.getenv("MOVIES_BUCKET")
-MINIO_ENDPOINT = os.getenv("MINIO_MASTER_HOST")
-
-AWS_ACCESS_KEY_ID = MINIO_ACCESS_KEY
-AWS_SECRET_ACCESS_KEY = MINIO_SECRET_KEY
-AWS_STORAGE_BUCKET_NAME = MINIO_BUCKET_NAME
-AWS_S3_ENDPOINT_URL = MINIO_ENDPOINT
-AWS_S3_URL_PROTOCOL = 'http'
-AWS_S3_FILE_OVERWRITE = False
-AWS_QUERYSTRING_EXPIRE = 28800
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+API_LOAD_SERVICE_URL = os.environ.get('API_CDN_LOAD_SERVICE_URL')
+MINIO_MASTER_STORAGE = os.environ.get('ADMIN_MOVIES_STORAGE_HOST')
+MINIO_ACCESS_KEY = os.environ.get('MINIO_USER')
+MINIO_SECRET_KEY = os.environ.get('MINIO_PASSWORD')
+BUCKET = os.environ.get('MOVIES_BUCKET')
+
+REDIS_HOST = os.environ.get('REDIS_ADMIN_MOVIES_HOST')
+REDIS_PORT = os.environ.get('REDIS_ADMIN_MOVIES_PORT')
+CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_IMPORTS = ('movies.tasks',)

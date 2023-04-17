@@ -6,6 +6,9 @@ from urllib3.exceptions import HTTPError
 
 from core.config import settings
 
+PART_SIZE = 10 * 1024 * 1024
+PARALLEL_UPLOADS = 4
+
 
 class LoaderException(Exception):
     pass
@@ -108,3 +111,26 @@ def delete_file(file_name: str, storage: str) -> dict[str, str]:
         return {"error": str(err)}
 
     return {"result": "deleted", "name": file_name, "storage": storage}
+
+
+def load_file_to_storage(file_path: str, object_name: str, storage: str):
+    minio = Minio(storage, access_key=settings.ACCESS_KEY, secret_key=settings.SECRET_KEY, secure=False)
+    try:
+        bucket = minio.bucket_exists(settings.BUCKET)
+        if not bucket:
+            minio.make_bucket(settings.BUCKET)
+            logging.debug("Create new bucket: [{0}]".format(settings.BUCKET))
+        result = minio.fput_object(
+            bucket_name=settings.BUCKET,
+            object_name=object_name,
+            file_path=file_path,
+            part_size=PART_SIZE,
+            num_parallel_uploads=PARALLEL_UPLOADS
+        )
+    except S3Error as err:
+        return {"error": str(err)}
+    else:
+        logging.debug(
+            "created {0} object; etag: {1}, version-id: {2}".format(result.object_name, result.etag, result.version_id)
+        )
+    return {"result": "uploaded", "name": result.object_name, "storage": storage, "etag": result.etag}

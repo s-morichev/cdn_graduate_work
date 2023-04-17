@@ -1,10 +1,13 @@
+import aiohttp
+import backoff as backoff
 import boto3
-
-from geopy.distance import distance
+import botocore.exceptions
 import geocoder
-from src.schemas import Storage
+import requests
+from geopy.distance import distance
 
-from src.settings import settings
+from src.schemas import Storage
+from src.settings import settings, logger
 
 
 class ObjectStorageBase:
@@ -21,17 +24,12 @@ class ObjectStorageBase:
             aws_secret_access_key=self.secret_key
         )
 
-        # Пока сам создаю ведра, в будущем выпилить
-        try:
-            self.s3.create_bucket(Bucket=self.bucket)
-        except Exception:
-            pass
-
     def check_file(self, key):
         try:
             obj = self.s3.head_object(Bucket=self.bucket, Key=key)
             return obj
-        except Exception:
+        except botocore.exceptions.ClientError:
+            logger.info('Object does not exist')
             return
 
     def get_link_file(self, key):
@@ -49,27 +47,38 @@ class ObjectStorageBase:
 class StorageWorker:
     cdn_storages = []
 
-    def create_storage_list(self):
-        for i in range(1, settings.storages_count + 1):
-            storage_url = getattr(settings, f"storage{i}_url")
-            storage_access_key = getattr(settings, f"storage{i}_access_key")
-            storage_secret_key = getattr(settings, f"storage{i}_secret_key")
-            storage_ip = getattr(settings, f"storage{i}_ip")
-            storage = Storage(
-                url=storage_url,
-                ip=storage_ip,
-                access_key=storage_access_key,
-                secret_key=storage_secret_key
-            )
-            self.cdn_storages.append(storage)
+    @backoff.on_exception(backoff.expo, aiohttp.ClientError, max_tries=3)
+    async def create_storage_list(self):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"{settings.sync_service_url}/get_storages") as response:
+                response.raise_for_status()
+                storages = await response.json()
+        for storage in storages:
+            self.cdn_storages.append(
+                Storage(
+                    url=storage["url"],
+                    ip=storage["ip_address"],
+                    access_key=settings.storage_access_key,
+                    secret_key=settings.storage_secret_key
+                ))
 
-    def get_cdn(self, ip_address):
+    async def get_storages(self, ip_address) -> list[dict]:
         user_geo = geocoder.ip(ip_address)
-        min_dist = distance(geocoder.ip(self.cdn_storages[0].ip).latlng, user_geo.latlng).km
-        min_dist_index = 0
-        for i in range(1, len(self.cdn_storages)):
-            dist = distance(geocoder.ip(self.cdn_storages[i].ip).latlng, user_geo.latlng).km
-            if dist < min_dist:
-                min_dist = dist
-                min_dist_index = i
-        return self.cdn_storages[min_dist_index]
+        storages = []
+        if not self.cdn_storages:
+            return storages
+        for storage in self.cdn_storages:
+            dist = distance(geocoder.ip(storage.ip).latlng, user_geo.latlng).km
+            storages.append(
+                {
+                    "storage": ObjectStorageBase(
+                        endpoint_url=storage.url,
+                        access_key=storage.access_key,
+                        secret_key=storage.secret_key,
+                        bucket=settings.bucket
+                    ),
+                    "distance": dist
+                }
+            )
+        storages.sort(key=lambda x: x["distance"])
+        return storages
