@@ -37,9 +37,9 @@ async def test_create_storage(client: AsyncClient):
         "ip_address": "111.111.111.111",
         "size_bytes": 2**50,
     }
-    # assert response.json()["url"] == "http://test.com"
-    # assert response.json()["ip_address"] == "111.111.111.111"
-    # assert response.json()["size_bytes"] == 2**50
+    assert response.json()["url"] == "http://test.com"
+    assert response.json()["ip_address"] == "111.111.111.111"
+    assert response.json()["size_bytes"] == 2**50
 
 
 async def test_read_multiple_storages(client: AsyncClient, clear_s3storage_table):

@@ -21,7 +21,7 @@ class FilmService(CRUDBase[Film, FilmCreate, FilmUpdate]):
             select(self.model).filter(self.model.id == film_id).options(selectinload(self.model.storages))
         )
         film = result.scalar_one_or_none()
-        if not film and film_size_bytes is not None:
+        if not film and film_size_bytes:
             # добавляем новый фильм
             film = self.model(id=film_id, size_bytes=film_size_bytes, storages=[storage])
             session.add(film)
