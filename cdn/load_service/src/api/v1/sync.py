@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Body, Depends
 
+from core.api_key import get_api_key
 from models.sync import SyncTask
 from workers.worker import add_tasks
-from core.api_key import get_api_key
+
 router = APIRouter()
 
 

@@ -36,7 +36,7 @@ class MinioLoader:
         self.destination_minio = Minio(host, access_key=access_key, secret_key=secret_key, secure=secure)
 
     def copy_file(
-            self, source_bucket: str, source_object: str, destination_bucket: str, destination_object: str
+        self, source_bucket: str, source_object: str, destination_bucket: str, destination_object: str
     ) -> dict:
         # 1 Получаем объект
         try:

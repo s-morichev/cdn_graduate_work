@@ -18,6 +18,6 @@ async def startup():
     logging.info("Check Redis connection")
     storage.check_broker()
 
+
 app.include_router(ping_router, prefix="", tags=["Ping"])
 app.include_router(sync_router, prefix="/v1", tags=["Sync"])
-

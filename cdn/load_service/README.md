@@ -4,26 +4,24 @@ API - FastAPI + Celery. В качестве очереди для Celery - Redis
 
 ### Endpoints
 * /ping - отвечает "pong"
-* POST /v1/tasks/upload - загружает файл из `source` в `destination`  
--IN:`{"file": "P1010043.JPG", "source": "localhost:9000", "destination": "localhost:19000"}`  
--OUT:`{"task_id": "82cdb1f0-1b1a-4da8-acde-83f08dffb703"}`    
-* POST /v1/tasks/delete - удаляет файл из `storage`  
--IN:`{"file": "1.MP4", "storage": "minio1:9000" }`  
--OUT:`{"task_id": "82cdb1f0-1b1a-4da8-acde-83f08dffb703"}`
-* GET /v1/tasks/status/{task_id} - возвращает статус задачи по ее `task_id`  
-  -OUT:  
- `{
- "task_id": "82cdb1f0-1b1a-4da8-acde-83f08dffb703",
-  "task_status": "SUCCESS",
-  "task_result": "{'name': 'P1010043.JPG', 'etag': 'af45e05f6ccf09f776e038d4a70a34c9', 'size': 2981355}"
-}`
+* POST /v1/tasks/sync - получает задание на синхронизацию:
+'{
+"delete": [{"movie_id": "string"}],
+"upload": [{"movie_id": "string", "storage_url": "string"}]
+ }
+'
 
 ### Запуск
-`make run-storage` - запускает два контейнера minio на портах 9000/1 и 19000/1 (логин `root` пароль `123456qwe`)
-* minio_1: http://localhost:9000
-* minio_2: http://localhost:19001  
+`make run-storage` - запускает два контейнера minio на портах 9010/1 и 9020/1 (логин `root` пароль `123456qwe`)
+* minio_1: http://localhost:9011
+* minio_2: http://localhost:9021  
 
 `.env.s3ls.example` переименовать в `.env.s3ls` - используется для запуска сервиса в докере  
-`make run-service` - запускает 4 контейнера, составляющие сервис загрузки  
+`make run-service` - запускает 6 контейнеров, составляющие сервис загрузки  
 * Dashboard доступен на http://localhost:5555
 * API http://localhost:8000/docs
+
+### Тесты
+`.env.test.example` переименовать в `.env.test`
+`make run-test-env` - запускает тестовое окружение для интеграционного теста  (tests/units/test_copy_delete.py)  
+`make test` - запуск тестов

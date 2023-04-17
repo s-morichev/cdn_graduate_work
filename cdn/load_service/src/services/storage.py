@@ -1,7 +1,7 @@
+import backoff
 from pydantic.error_wrappers import ValidationError
 from redis import Redis
 from redis.exceptions import RedisError
-import backoff
 
 from core.config import settings
 from models.update import UpdateItem, Updates
@@ -25,7 +25,7 @@ class Storage:
         self.add_message(update.json())
 
     def delete(self, count: int = 0):
-        """ Удаляет из списка count первых сообщений"""
+        """Удаляет из списка count первых сообщений"""
         self.redis.ltrim(self.update_key, count, -1)
 
     def get_messages(self):

@@ -32,7 +32,7 @@ def add_result_notice(action: Actions, file_name: str):
     celery_log.debug("add result notice ({0},{1})".format(action, file_name))
 
 
-@celery.task(name="MinioUpload", autoretry_for=(TaskFailure,), retry_kwargs={'max_retries': 5, 'retry_backoff': True})
+@celery.task(name="MinioUpload", autoretry_for=(TaskFailure,), retry_kwargs={"max_retries": 5, "retry_backoff": True})
 def load_object(file_name: str, source: str) -> dict[str, str]:
     result = copy_file(file_name, source, settings.HOME_STORAGE_URI)
 
@@ -58,7 +58,7 @@ def delete_object(file_name: str) -> dict[str, str]:
 def do_sync():
     res_hb = send_heartbeat()
     res_upd = do_update()
-    return {'heartbeat': res_hb, 'update': res_upd}
+    return {"heartbeat": res_hb, "update": res_upd}
 
 
 def add_tasks(tasks_list: SyncTask):

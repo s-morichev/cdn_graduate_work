@@ -1,10 +1,10 @@
 import backoff
 import httpx
 
+from core.api_key import get_api_key_header
 from core.config import settings
 from models.update import Updates
 from services.storage import storage
-from core.api_key import get_api_key_header
 
 """
 Функции для отправки данных на сервер синхронизации
@@ -25,7 +25,7 @@ def post_message_to_server(url: str, message: dict) -> bool:
         response = httpx.post(url=url, headers=headers, json=message, timeout=1)
         response.raise_for_status()
 
-    except httpx.HTTPError as err:
+    except httpx.HTTPError:
         return False
 
     return True

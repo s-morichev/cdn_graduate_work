@@ -8,10 +8,11 @@ services:
         - "9000:9000"
         - "9001:9001"
       environment:
-        MINIO_ROOT_USER: root
-        MINIO_ROOT_PASSWORD: 123456qwe
+        MINIO_ROOT_USER: ${S3LS_ACCESS_KEY}
+        MINIO_ROOT_PASSWORD: ${S3LS_SECRET_KEY}
       volumes:
         - minio-storage:/data
+
       healthcheck:
         test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
         interval: 30s

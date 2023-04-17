@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     SYNC_URI: str = Field(..., env="S3LS_SYNC_URI")
     HEARTBEAT_URI: str = Field(..., env="S3LS_HEARTBEAT_URI")
     BEAT_TIMEOUT: int = Field(30, env="BEAT_TIMEOUT")
-    API_KEY: str = Field('secret', env='S3LS_API_KEY')
+    API_KEY: str = Field("secret", env="S3LS_API_KEY")
     BUCKET: str = "movies"
     ACCESS_KEY: str = Field(..., env="S3LS_ACCESS_KEY")
     SECRET_KEY: str = Field(..., env="S3LS_SECRET_KEY")
