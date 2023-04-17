@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Filmwork, Genre, GenreFilmwork, Person, PersonFilmwork
+from .models import Filmwork, Genre, GenreFilmwork, Person, PersonFilmwork, Storage
 
 
 @admin.register(Genre)
@@ -26,6 +26,7 @@ class FilmworkAdmin(admin.ModelAdmin):
     list_filter = ('type',)
     search_fields = ('title', 'description', 'id')
     list_prefetch_related = ('persons', 'genres')
+    exclude = ('status',)
 
     def get_queryset(self, request):
         queryset = (
@@ -44,3 +45,9 @@ class FilmworkAdmin(admin.ModelAdmin):
 class PersonAdmin(admin.ModelAdmin):
     list_display = ('full_name',)
     search_fields = ('full_name',)
+
+
+@admin.register(Storage)
+class StorageAdmin(admin.ModelAdmin):
+    list_display = ('size', 'url', 'geo_ip',)
+    search_fields = ('geo_ip',)

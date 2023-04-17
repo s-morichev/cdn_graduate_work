@@ -2,7 +2,7 @@ from celery.result import AsyncResult
 from fastapi import APIRouter, Body
 
 from core.core_model import CoreModel
-from workers.worker import celery, delete_object, load_object
+from workers.worker import celery, delete_object, load_object, load_object_to_storage
 
 router = APIRouter()
 
@@ -11,6 +11,12 @@ class LoadTask(CoreModel):
     file: str
     source: str
     destination: str
+
+
+class UploadTask(CoreModel):
+    file_path: str
+    object_name: str
+    storage: str
 
 
 class DeleteTask(CoreModel):
@@ -32,6 +38,14 @@ load_examples = {
     "load pic": {
         "summary": "load picture",
         "value": LoadTask(file="P1010043.JPG", source="localhost:9000", destination="localhost:19000").json(),
+    }
+}
+
+upload_to_storage_examples = {
+    "load file": {
+        "summary": "load file",
+        "value": UploadTask(
+            file_path='/home/data/media/piano.mp3', object_name='piano.mp3', storage="localhost:19000").json(),
     }
 }
 
@@ -86,3 +100,9 @@ def add_task_delete(task: DeleteTask):
 def get_status(task_id: str):
     task_result = AsyncResult(task_id, app=celery)
     return ResponseStatus(task_id=task_id, task_status=task_result.status, task_result=str(task_result.result))
+
+
+@router.post("/tasks/upload_file_to_storage", response_model=ResponseTask, responses=response_add_example)
+def add_task_upload_to_master(task: UploadTask = Body(..., examples=upload_to_storage_examples)):
+    new_task = load_object_to_storage.delay(task.file_path, task.object_name, task.storage)
+    return ResponseTask(task_id=new_task.id)

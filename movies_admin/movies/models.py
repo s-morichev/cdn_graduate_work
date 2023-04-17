@@ -1,8 +1,17 @@
+import logging
 import uuid
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
+
+from config.components.common import MINIO_MASTER_STORAGE
+from .schemas import UploadTask
+from .service import upload_file
+
+logger = logging.getLogger(__name__)
 
 
 class TimeStampedMixin(models.Model):
@@ -50,6 +59,16 @@ class Person(UUIDMixin, TimeStampedMixin):
         return self.full_name
 
 
+def set_filename(instance, filename):
+    return str(instance.id)
+
+
+class FilmworkLoadStatusToS3(models.TextChoices):
+    WAITING = 'waiting', _('Waiting')
+    FAILED = 'failed', _('Failed')
+    DONE = 'done', _('Done')
+
+
 class Filmwork(UUIDMixin, TimeStampedMixin):
 
     class FilmworkTypes(models.TextChoices):
@@ -65,9 +84,7 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
     creation_date = models.DateField(_('creation date'))
     file = models.FileField(
         _('file'),
-        blank=True,
-        null=True,
-        upload_to='media/',
+        upload_to=set_filename,
     )
     rating = models.FloatField(
         _('rating'),
@@ -81,6 +98,12 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
         max_length=7,
         choices=FilmworkTypes.choices,
         help_text="Выберите тип произведения"
+    )
+    status = models.CharField(
+        _('Status'),
+        max_length=50,
+        choices=FilmworkLoadStatusToS3.choices,
+        default=FilmworkLoadStatusToS3.WAITING,
     )
     genres = models.ManyToManyField(Genre, through='GenreFilmwork')
     persons = models.ManyToManyField(Person, through='PersonFilmwork')
@@ -121,7 +144,6 @@ class RoleTypes(models.TextChoices):
 
 
 class PersonFilmwork(UUIDMixin):
-
     film_work = models.ForeignKey('Filmwork', on_delete=models.CASCADE)
     person = models.ForeignKey('Person', on_delete=models.CASCADE)
     role = models.TextField(
@@ -144,3 +166,40 @@ class PersonFilmwork(UUIDMixin):
 
     def __str__(self):
         return ''
+
+
+class Storage(UUIDMixin, TimeStampedMixin):
+    size = models.PositiveBigIntegerField(
+        _('size'),
+        help_text=_("Enter the storage size in gigabytes"),
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(15360)
+        ])
+    url = models.CharField(_('url'), max_length=200)
+    geo_ip = models.GenericIPAddressField(_('geo_ip'),)
+
+    class Meta:
+        db_table = "content\".\"storage"
+        ordering = ("-size",)
+        verbose_name = 'Хранилище'
+        verbose_name_plural = 'Хранилища'
+
+    def __str__(self):
+        return self.url
+
+
+@receiver(pre_save, sender=Storage)
+def convert_to_bytes(sender, instance, *args, **kwargs):
+    instance.size *= 1024 * 1024 * 1024
+
+
+@receiver(post_save, sender=Filmwork)
+def upload_file_to_master(sender, instance, created, **kwargs):
+    if created and instance.file:
+        task = UploadTask(
+            file_path=instance.file.path,
+            object_name=instance.file.name,
+            storage=MINIO_MASTER_STORAGE
+        )
+        upload_file(task)
