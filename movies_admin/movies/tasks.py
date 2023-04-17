@@ -31,9 +31,7 @@ def check_status():
             minio.stat_object(BUCKET, film.file.name)
         except S3Error as error:
             logger.debug(ERROR_MESSAGE, film.file.name, error)
-            # статус failed используется для того, чтобы
-            # администратор наглядно видел через админку, какие файлы не удалось загрузить в хранилище
-            if (film.created + timedelta(hours=8)).strftime('%H:%M:%S') < datetime.now().strftime('%H:%M:%S'):
+            if (film.created + timedelta(hours=8)).strftime('%H:%M:%S') < datetime.utcnow().strftime('%H:%M:%S'):
                 film.status = 'failed'
             continue
         else:

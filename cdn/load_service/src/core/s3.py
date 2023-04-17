@@ -129,9 +129,6 @@ def load_file_to_storage(file_path: str, object_name: str, storage: str):
         )
     except S3Error as err:
         return {"error": str(err)}
-    except HTTPError as err:
-        logging.error(err)
-        raise LoaderException(err)
     else:
         logging.debug(
             "created {0} object; etag: {1}, version-id: {2}".format(result.object_name, result.etag, result.version_id)

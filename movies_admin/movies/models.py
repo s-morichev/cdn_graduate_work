@@ -60,14 +60,7 @@ class Person(UUIDMixin, TimeStampedMixin):
 
 
 def set_filename(instance, filename):
-    extension = ''
-    for letter in filename[::-1]:
-        if letter == '.':
-            extension = extension[::-1]
-            break
-        else:
-            extension += letter
-    return '%s.%s' % (str(instance.id), extension)
+    return str(instance.id)
 
 
 class FilmworkLoadStatusToS3(models.TextChoices):
@@ -176,8 +169,6 @@ class PersonFilmwork(UUIDMixin):
 
 
 class Storage(UUIDMixin, TimeStampedMixin):
-    # верхнее число валидатора в размере 15360 указано,
-    # исходя из того факта, что максимально возможный размер Minio хранилища = 15 Tb
     size = models.PositiveBigIntegerField(
         _('size'),
         help_text=_("Enter the storage size in gigabytes"),
