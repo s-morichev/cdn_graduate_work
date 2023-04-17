@@ -63,16 +63,25 @@ services:
     ports:
      - "9000:9000"
      - "9001:9001"
+    networks:
+      default:
+        ipv4_address: 172.18.0.10
 
   minio-1:
     ports:
       - "9010:9000"
       - "9011:9001"
+    networks:
+      default:
+        ipv4_address: 172.18.0.11
 
   minio-2:
     ports:
       - "9020:9000"
       - "9021:9001"
+    networks:
+      default:
+        ipv4_address: 172.18.0.12
 
   prometheus:
     ports:
@@ -97,3 +106,19 @@ services:
   routing-service:
     ports:
       - "8008:8000"
+
+  sync-service:
+    ports:
+      - "8012:8000"
+
+  postgres_sync:
+    ports:
+      - "${PG_SYNC_PORT}:5432"
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
+          gateway: 172.18.0.1
