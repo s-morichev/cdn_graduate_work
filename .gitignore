@@ -140,3 +140,4 @@ auth/.env.test.local
 
 /cdn/load_service/.env.local
 /cdn/load_service/.env.s3ls
+/cdn/load_service/src/temp/

@@ -1,17 +1,36 @@
-name: s3-load-service
+name: test_load-service
 services:
+    minio-src:
+      image: minio/minio:latest
+      container_name: minio_source
+      command: server --console-address ":9001" /data/
+      ports:
+        - "9010:9000"
+        - "9011:9001"
+      env_file:
+        - .env.test
+      environment:
+        MINIO_ROOT_USER: ${S3LS_ACCESS_KEY}
+        MINIO_ROOT_PASSWORD: ${S3LS_SECRET_KEY}
+
+      healthcheck:
+        test: [ "CMD", "curl", "-f", "http://localhost:9010/minio/health/live" ]
+        interval: 30s
+        timeout: 20s
+        retries: 3
+
     minio:
       image: minio/minio:latest
-      container_name: minio
+      container_name: minio_test
       command: server --console-address ":9001" /data/
       ports:
         - "9000:9000"
         - "9001:9001"
+      env_file:
+        - .env.test
       environment:
         MINIO_ROOT_USER: ${S3LS_ACCESS_KEY}
         MINIO_ROOT_PASSWORD: ${S3LS_SECRET_KEY}
-      volumes:
-        - minio-storage:/data
 
       healthcheck:
         test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
@@ -19,30 +38,15 @@ services:
         timeout: 20s
         retries: 3
 
-    web:
-      build:
-        dockerfile: ./docker/Dockerfile
-        target: development
-      container_name: api
-      ports:
-        - "8000:8000"
-      command: uvicorn main:app --host 0.0.0.0 --reload
-      env_file:
-        - .env.s3ls
-
-      #volumes:
-      #  - ./src:/opt/app
-      depends_on:
-        - redis
 
     celery-worker:
       build:
         dockerfile: ./docker/Dockerfile
         target: development
-      container_name: celery_worker
+      container_name: celery_worker_test
       command: celery -A workers.worker.celery worker --loglevel=info
       env_file:
-        - .env.s3ls
+        - .env.test
       volumes:
         - ./src:/opt/app
       depends_on:
@@ -52,12 +56,12 @@ services:
       build:
         dockerfile: ./docker/Dockerfile
         target: development
-      container_name: celery_beat
+      container_name: celery_beat_test
       command: celery -A workers.worker.celery beat --loglevel=debug
       volumes:
         - ./src:/opt/app
       env_file:
-        - .env.s3ls
+        - .env.test
       depends_on:
         - redis
 
@@ -65,7 +69,7 @@ services:
         build:
           dockerfile: ./docker/Dockerfile
           target: development
-        container_name: dashboard
+        container_name: dashboard_test
         command: celery --broker=redis://redis:6379/0 flower
         ports:
           - "5555:5555"
@@ -75,13 +79,10 @@ services:
 
     redis:
       image: redis:7.0.10-alpine
-      container_name: redis
+      container_name: redis_test
       ports:
         - "6379:6379"
 
-volumes:
-  minio-storage:
-
 networks:
   default:
-    name: s3-network
+    name: s3-test_network
