@@ -140,7 +140,7 @@ def load_file_to_storage(file_path: str, object_name: str, storage: str):
             object_name=object_name,
             file_path=file_path,
             part_size=PART_SIZE,
-            num_parallel_uploads=PARALLEL_UPLOADS
+            num_parallel_uploads=PARALLEL_UPLOADS,
         )
     except S3Error as err:
         return {"error": str(err)}

@@ -99,7 +99,7 @@ def test_copy(create_files, client):
 
 def test_delete_and_copy(create_files, client):
     lst_delete = create_files[: FILES_COUNT // 2]
-    lst_copy = create_files[FILES_COUNT // 2:]  # noqa E203
+    lst_copy = create_files[FILES_COUNT // 2 :]  # noqa E203
     sync_data = {
         "delete": [{"movie_id": file[0]} for file in lst_delete],
         "upload": [{"movie_id": file[0], "storage_url": SOURCE_S3_HOST_DOCKER} for file in lst_copy],
@@ -115,7 +115,7 @@ def test_delete_and_copy(create_files, client):
 
 
 def test_delete(create_files, client):
-    lst_delete = create_files[FILES_COUNT // 2:]  # noqa E203
+    lst_delete = create_files[FILES_COUNT // 2 :]  # noqa E203
     sync_data = {"delete": [{"movie_id": file[0]} for file in lst_delete]}
     result = client.post("/v1/tasks/sync", json=sync_data, headers=get_api_key_header())
     assert result.status_code == http.HTTPStatus.OK

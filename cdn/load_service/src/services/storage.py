@@ -49,7 +49,6 @@ class Storage:
 
     @backoff.on_predicate(backoff.expo, max_tries=None, max_value=30)
     def check_broker(self) -> bool:
-
         try:
             self.redis.ping()
         except RedisError:
