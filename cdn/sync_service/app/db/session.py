@@ -3,7 +3,7 @@ import socket
 
 import asyncpg
 import backoff
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, ProgrammingError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import settings
@@ -29,6 +29,12 @@ async def check_connection():
         pass
 
 
+@backoff.on_exception(  # ждем создание таблицы
+    backoff.expo,
+    exception=ProgrammingError,
+    max_time=60,
+    max_value=5,
+)
 async def add_storages(session: AsyncSession):
     for s3_settings in settings.S3_SETTINGS:
         storage = S3Storage(
@@ -39,6 +45,9 @@ async def add_storages(session: AsyncSession):
             await session.commit()
         except IntegrityError:
             await session.rollback()
+        except ProgrammingError:
+            await session.rollback()
+            raise
 
 
 async def recreate_tables(session: AsyncSession):
