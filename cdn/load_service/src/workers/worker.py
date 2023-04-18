@@ -4,7 +4,7 @@ from celery.utils.log import get_task_logger
 from core.config import settings
 from models.sync import SyncTask
 from models.update import Actions, UpdateItem
-from services.s3 import copy_file, delete_file
+from services.s3 import copy_file, delete_file, load_file_to_storage
 from services.storage import storage
 from services.update import do_update, send_heartbeat
 
@@ -73,3 +73,13 @@ def add_tasks(tasks_list: SyncTask):
             load_object.delay(task.movie_id, task.storage_url)
 
     return
+
+
+@celery.task(name="UploadFileToStorage")
+def load_object_to_storage(file_path: str, object_name: str, storage: str):
+    result = load_file_to_storage(file_path, object_name, storage)
+
+    if "error" in result:
+        raise TaskFailure(result)
+
+    return result

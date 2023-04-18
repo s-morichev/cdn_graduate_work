@@ -2,9 +2,11 @@ version: '3.7'
 services:
   nginx:
     image: nginx:1.23.3-alpine
+    container_name: nginx
     volumes:
       - ./nginx/proxy/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/proxy/configs:/etc/nginx/conf.d:ro
+      - static_value:/code/static/:ro
     ports:
       - "80:80"
     depends_on:
@@ -35,7 +37,7 @@ services:
   etl_ugc:
     image: etl_ugc
     restart: "always"
-    container_name: etl_kafka
+    container_name: etl_ugc
     env_file:
       - .env
     depends_on:
@@ -70,6 +72,7 @@ services:
 
   mongodb_ugc:
     image: mongo:latest
+    container_name: mongodb_ugc
     environment:
       MONGO_INITDB_DATABASE: prod-db
       MONGO_INITDB_ROOT_USERNAME: user_name
@@ -139,62 +142,229 @@ services:
         soft: 65536
         hard: 65536
 
-  minio_0:
+  minio-0:
     image: minio/minio:RELEASE.2023-03-24T21-41-23Z
+    container_name: minio-0
     command: server --console-address ":9001" /data/
     environment:
      MINIO_ROOT_USER: ${MINIO_USER}
      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+     MINIO_PROMETHEUS_AUTH_TYPE: jwt
+     MINIO_PROMETHEUS_URL: prometheus:9000
+     MINIO_PROMETHEUS_JOB_ID: minio-job
+     MINIO_NOTIFY_WEBHOOK_ENABLE_syncmovie: on
+     MINIO_NOTIFY_WEBHOOK_ENDPOINT_syncmovie: http://sync-service:8000/api/v1/films/events
+     MINIO_NOTIFY_WEBHOOK_AUTH_TOKEN_syncmovie: ${SYNC_SECRET_KEY}
+     MINIO_NOTIFY_WEBHOOK_QUEUE_DIR_syncmovie: /minio_events
     volumes:
      - minio_0_data:/data
 
-  nginx_minio_0:
+  nginx-minio-0:
     image: nginx:1.23.3-alpine
+    container_name: nginx-minio-0
     volumes:
       - ./nginx/s3_proxy/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/s3_proxy/configs/s3_0.conf:/etc/nginx/conf.d/s3_0.conf:ro
     ports:
       - "7000:80"
     depends_on:
-      - minio_0
+      - minio-0
 
-  minio_1:
+  minio-1:
     image: minio/minio:RELEASE.2023-03-24T21-41-23Z
+    container_name: minio-1
     command: server --console-address ":9001" /data/
     environment:
      MINIO_ROOT_USER: ${MINIO_USER}
      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+     MINIO_PROMETHEUS_AUTH_TYPE: jwt
+     MINIO_PROMETHEUS_URL: prometheus:9000
+     MINIO_PROMETHEUS_JOB_ID: minio-job
     volumes:
      - minio_1_data:/data
 
-  nginx_minio_1:
+  nginx-minio-1:
     image: nginx:1.23.3-alpine
+    container_name: nginx-minio-1
     volumes:
       - ./nginx/s3_proxy/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/s3_proxy/configs/s3_1.conf:/etc/nginx/conf.d/s3_1.conf:ro
     ports:
       - "7010:80"
     depends_on:
-      - minio_1
+      - minio-1
 
-  minio_2:
+  minio-2:
     image: minio/minio:RELEASE.2023-03-24T21-41-23Z
+    container_name: minio-2
     command: server --console-address ":9001" /data/
     environment:
      MINIO_ROOT_USER: ${MINIO_USER}
      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+     MINIO_PROMETHEUS_AUTH_TYPE: jwt
+     MINIO_PROMETHEUS_URL: prometheus:9000
+     MINIO_PROMETHEUS_JOB_ID: minio-job
     volumes:
      - minio_2_data:/data
 
-  nginx_minio_2:
+  nginx-minio-2:
     image: nginx:1.23.3-alpine
+    container_name: nginx-minio-2
     volumes:
       - ./nginx/s3_proxy/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/s3_proxy/configs/s3_2.conf:/etc/nginx/conf.d/s3_2.conf:ro
     ports:
       - "7020:80"
     depends_on:
-      - minio_2
+      - minio-2
+
+  prometheus:
+    image: prom/prometheus:v2.43.0
+    container_name: prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/data
+
+  postgres_movies:
+    image: postgres:15.1-alpine
+    container_name: postgres_movies
+    volumes:
+      - postgres_movies_data:/var/lib/postgresql/data/
+      - ./movies_admin/config/sql/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
+    environment:
+      - POSTGRES_USER=${PG_MOVIES_USER}
+      - POSTGRES_PASSWORD=${PG_MOVIES_PASSWORD}
+      - POSTGRES_DB=${PG_MOVIES_DB_NAME}
+
+  admin_movies:
+    container_name: admin_movies
+    build:
+      context: ./movies_admin
+      dockerfile: ./Dockerfile
+    command: /bin/bash -c "gunicorn --bind 0.0.0.0:8000 config.wsgi:application --threads 2 --timeout 600"
+    volumes:
+      - static_value:/opt/app/static/
+      - media_value:/opt/app/media/
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - postgres_movies
+      - minio-0
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio-0
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc config host add myminio ${MINIO_MASTER_HOST} ${MINIO_USER} ${MINIO_PASSWORD}) do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc mb --ignore-existing myminio/${MOVIES_BUCKET};
+      /usr/bin/mc policy download myminio/${MOVIES_BUCKET};
+      /usr/bin/mc event add myminio/${MOVIES_BUCKET} arn:minio:sqs::syncmovie:webhook --event put delete;
+      /usr/bin/mc admin info myminio;
+      exit 0;
+      "
+
+  load-service:
+    build:
+      context: ./cdn/load_service
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: load_service
+    command: /bin/bash -c "uvicorn main:app --host 0.0.0.0 --reload"
+    volumes:
+      - media_value:/opt/app/media/
+    env_file:
+      - .env
+    depends_on:
+      - redis_load_service
+
+  load_service_worker:
+    build:
+      context: ./cdn/load_service
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: load_service_celery_worker
+    command: celery -A workers.worker.celery worker --loglevel=info
+    volumes:
+      - media_value:/opt/app/media/
+    env_file:
+      - .env
+    depends_on:
+      - load-service
+      - redis_load_service
+
+  dashboard:
+    build:
+      context: ./cdn/load_service
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: dashboard
+    command: celery --broker=redis://redis_load_service:6379/0 flower
+    depends_on:
+      - load-service
+      - redis_load_service
+      - load_service_worker
+
+  redis_load_service:
+    image: redis:7.0.10-alpine
+    container_name: redis_load_service
+
+  routing-service:
+    build:
+      context: ./cdn/routing_service/
+      dockerfile: ./docker/Dockerfile
+    container_name: routing_service
+    env_file:
+      - .env
+
+  sync-service:
+    build:
+      context: ./cdn/sync_service/
+      dockerfile: ./docker/Dockerfile
+    container_name: sync_service
+    env_file:
+      - .env
+    depends_on:
+      - postgres_sync
+
+  postgres_sync:
+    image: postgres:15.1-alpine
+    container_name: postgres_sync
+    volumes:
+      - postgres_sync_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${PG_SYNC_USER}
+      - POSTGRES_PASSWORD=${PG_SYNC_PASSWORD}
+      - POSTGRES_DB=${PG_SYNC_DB_NAME}
+
+  redis_admin_movies:
+    image: redis:7.0.5-alpine
+    container_name: redis_admin_movies
+    volumes:
+      - redis_admin_movies_data:/data
+    restart: always
+    ports:
+      - "63791:6379"
+
+  admin_movies_worker:
+    container_name: admin_movies_worker
+    build:
+      context: ./movies_admin
+      dockerfile: ./Dockerfile
+    command: celery -A config.app.app worker -B --loglevel=DEBUG
+    volumes:
+      - worker_celery_data:/data
+      - media_value:/opt/app/media/
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - admin_movies
+      - redis_admin_movies
+      - postgres_movies
 
 volumes:
   zookeeper_1_data:
@@ -208,3 +378,10 @@ volumes:
   minio_0_data:
   minio_1_data:
   minio_2_data:
+  static_value:
+  media_value:
+  postgres_movies_data:
+  prometheus_data:
+  postgres_sync_data:
+  redis_admin_movies_data:
+  worker_celery_data:

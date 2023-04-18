@@ -1,12 +1,15 @@
 from http import HTTPStatus
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Response, HTTPException
+from motor.motor_asyncio import AsyncIOMotorClient
 
 from core.auth_bearer import AccessTokenPayload, jwt_bearer
 from core.core_model import CoreModel
 from db.film_view_storage import FilmViewStorage, get_film_storage
-from models.dto import DTOViewEvent
+from db.user_info_db.database import get_session
+from models.dto import DTOViewEvent, RecordMovie
+from models.user_info import RecordFilm
 
 
 class ViewEvent(CoreModel):
@@ -39,3 +42,20 @@ async def add_movie_view(
     await storage.save(payload)
 
     return Response(status_code=HTTPStatus.NO_CONTENT)
+
+
+@router.post("/record_film/{film_id}",)
+async def record_movie_request(
+        film_id,
+        user_id,
+        db: AsyncIOMotorClient = Depends(get_session),
+):
+    collection = db["record_films"]
+    if await collection.find_one({"film_id": film_id, "user_id": user_id}):
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=f"Bookmark already exist")
+    record_film = RecordFilm(film_id=film_id, user_id=user_id)
+    try:
+        result = await collection.insert_one(record_film.dict())
+        return {"success": True, "id": str(result.inserted_id)}
+    except Exception:
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Insert error")
