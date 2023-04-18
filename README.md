@@ -1,5 +1,7 @@
 https://github.com/Pummas/graduate_work
-Над проектом работали:  
+
+
+### Над проектом работали:  
 * Михаил Лукин (Тимлид) https://github.com/Pummas
 * Валерия Малышева https://github.com/valerycode
 * Роман Боровский https://github.com/RomanBorovskiy
