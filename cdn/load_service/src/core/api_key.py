@@ -13,7 +13,7 @@ api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 
 async def get_api_key(key_header: str = Security(api_key_header)):
-    if key_header == API_KEY:
+    if key_header == API_KEY or key_header == f'Bearer {API_KEY}':
         return key_header
     else:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials")
