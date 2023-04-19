@@ -59,6 +59,19 @@ class Person(UUIDMixin, TimeStampedMixin):
         return self.full_name
 
 
+class Mark(UUIDMixin, TimeStampedMixin):
+    name = models.CharField(_('name'), max_length=255, unique=True)
+
+    class Meta:
+        db_table = "content\".\"mark"
+        ordering = ("name",)
+        verbose_name = 'Метка'
+        verbose_name_plural = 'Метки'
+
+    def __str__(self):
+        return self.name
+
+
 def set_filename(instance, filename):
     return str(instance.id)
 
@@ -67,6 +80,14 @@ class FilmworkLoadStatusToS3(models.TextChoices):
     WAITING = 'waiting', _('Waiting')
     FAILED = 'failed', _('Failed')
     DONE = 'done', _('Done')
+
+
+class AgeRating(models.IntegerChoices):
+    ZERO = 0
+    SIX = 6
+    TWELVE = 12
+    SIXTEEN = 16
+    EIGHTEEN = 18
 
 
 class Filmwork(UUIDMixin, TimeStampedMixin):
@@ -105,8 +126,10 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
         choices=FilmworkLoadStatusToS3.choices,
         default=FilmworkLoadStatusToS3.WAITING,
     )
+    age_limit = models.IntegerField(choices=AgeRating.choices, default=AgeRating.ZERO)
     genres = models.ManyToManyField(Genre, through='GenreFilmwork')
     persons = models.ManyToManyField(Person, through='PersonFilmwork')
+    marks = models.ManyToManyField(Mark, through='MarkFilmwork')
 
     class Meta:
         db_table = "content\".\"film_work"
@@ -163,6 +186,25 @@ class PersonFilmwork(UUIDMixin):
             )]
         verbose_name = 'Участник фильма'
         verbose_name_plural = 'Участники фильма'
+
+    def __str__(self):
+        return ''
+
+
+class MarkFilmwork(UUIDMixin):
+    film_work = models.ForeignKey('Filmwork', on_delete=models.CASCADE)
+    mark = models.ForeignKey('Mark', on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "content\".\"mark_film_work"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['film_work', 'mark'],
+                name='unique_film_work_mark'
+            )]
+        verbose_name = 'Метка фильма'
+        verbose_name_plural = 'Метки фильма'
 
     def __str__(self):
         return ''
