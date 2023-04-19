@@ -8,7 +8,7 @@ put_to_master_event = {
                     "size": 15,
                 },
             },
-            "source": {"host": "172.18.0.10"},
+            "responseElements": {"x-minio-origin-endpoint": "http://172.18.0.10:9000"},
         }
     ],
 }
@@ -23,7 +23,7 @@ put_to_edge_event = {
                     "size": 15,
                 },
             },
-            "source": {"host": "172.18.0.11"},
+            "responseElements": {"x-minio-origin-endpoint": "http://172.18.0.11:9000"},
         }
     ],
 }
