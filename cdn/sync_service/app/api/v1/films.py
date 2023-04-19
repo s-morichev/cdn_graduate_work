@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 from urllib.parse import urlparse
 from uuid import UUID
@@ -11,6 +12,7 @@ from app.services.film_service import film_service
 from app.services.s3storage_service import s3storage_service
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/events", status_code=HTTPStatus.OK)
@@ -27,6 +29,7 @@ async def process_s3_event(
 
         storage = await s3storage_service.get_storage_by_ip(session, storage_ip)
         if not storage:
+            logger.critical("Got S3 event from unregistered storage. Event %s", event)
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"Storage ip {storage_ip} not found")
 
         if event_type.startswith("s3:ObjectCreated"):

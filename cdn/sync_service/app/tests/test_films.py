@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from urllib.parse import urlparse
 
 import pytest
 from fastapi.encoders import jsonable_encoder
@@ -25,8 +26,10 @@ async def test_put_events(client: AsyncClient, session: AsyncSession):
     assert response.status_code == HTTPStatus.OK
 
     film_id = constants.put_to_master_event["Records"][0]["s3"]["object"]["key"]
-    master_ip = constants.put_to_master_event["Records"][0]["source"]["host"]
-    edge_ip = constants.put_to_edge_event["Records"][0]["source"]["host"]
+    master_url = constants.put_to_master_event["Records"][0]["responseElements"]["x-minio-origin-endpoint"]
+    master_ip = urlparse(master_url).netloc.split(":")[0]
+    edge_url = constants.put_to_edge_event["Records"][0]["responseElements"]["x-minio-origin-endpoint"]
+    edge_ip = urlparse(edge_url).netloc.split(":")[0]
 
     response = await client.get(f"api/v1/films/{film_id}/storages")
     assert response.status_code == HTTPStatus.OK
