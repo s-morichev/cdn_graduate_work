@@ -8,10 +8,8 @@ from src.settings import settings, logger
 
 async def get_ip_address(request: Request):
     if request.client.host == "127.0.0.1":
-        ip_address = fake.ipv4()
-    else:
-        ip_address = request.client.host
-    return ip_address
+        return fake.ipv4()
+    return request.client.host
 
 
 async def save_info_ugc_service(film_id, user_id):

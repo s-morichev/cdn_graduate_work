@@ -1,5 +1,4 @@
 django==3.2
-flake8==4.0
 python-dotenv==0.21.0
 psycopg2==2.9.5
 django-split-settings==1.2.0
@@ -14,3 +13,4 @@ python-multipart==0.0.6
 celery==5.2.7
 redis==4.5.1
 minio==7.1.14
+django-s3file==5.5.3

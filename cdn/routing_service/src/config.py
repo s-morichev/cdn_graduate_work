@@ -12,6 +12,6 @@ storage_worker = StorageWorker()
 
 async def get_storage_worker():
     if storage_worker.cdn_storages:
-        return storage_worker
+        yield storage_worker
     await storage_worker.create_storage_list()
-    return storage_worker
+    yield storage_worker
