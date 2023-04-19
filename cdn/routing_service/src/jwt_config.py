@@ -12,8 +12,8 @@ from src.core_model import CoreModel
 
 logger = logging.getLogger(__name__)
 
-JWT_SECRET = settings.JWT_SECRET_KEY
-MOCK_TOKEN = settings.MOCK_AUTH_TOKEN
+JWT_SECRET = settings.jwn_secret_key
+MOCK_TOKEN = settings.mock_auth_token
 JWT_ALGORITHM = "HS256"
 
 

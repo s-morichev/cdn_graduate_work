@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     bucket: str = Field("test", env="MOVIES_BUCKET")
 
     # JWT
-    JWT_SECRET_KEY: str = Field("secret_jwt_key", env="UGC_JWT_KEY")
-    MOCK_AUTH_TOKEN: bool = Field(
+    jwn_secret_key: str = Field("secret_jwt_key", env="UGC_JWT_KEY")
+    mock_auth_token: bool = Field(
         False, env="UGC_MOCK_AUTH_TOKEN"
     )  # для отладки - можно отключить проверку токена в заголовках
 
