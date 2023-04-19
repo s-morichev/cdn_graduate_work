@@ -366,6 +366,22 @@ services:
       - redis_admin_movies
       - postgres_movies
 
+
+  etl_movies:
+    restart: "always"
+    build:
+      context: ./etl_backend
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: etl_movies
+    volumes:
+      - etl_movies_data:/opt/app/var/
+    env_file:
+      - .env
+    depends_on:
+      - postgres_movies
+      - elasticsearch_movies
+
 volumes:
   zookeeper_1_data:
   broker_1_data:
@@ -385,3 +401,4 @@ volumes:
   postgres_sync_data:
   redis_admin_movies_data:
   worker_celery_data:
+  etl_movies_data:

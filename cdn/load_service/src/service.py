@@ -5,6 +5,7 @@ from fastapi.responses import ORJSONResponse
 
 from api.v1.ping import router as ping_router
 from api.v1.sync import router as sync_router
+from api.v1.tasks import router as task_router
 from core.config import settings
 from services.storage import storage
 
@@ -21,3 +22,4 @@ async def startup():
 
 app.include_router(ping_router, prefix="", tags=["Ping"])
 app.include_router(sync_router, prefix="/v1", tags=["Sync"])
+app.include_router(task_router, prefix="/v1", tags=["Admin Tasks"])

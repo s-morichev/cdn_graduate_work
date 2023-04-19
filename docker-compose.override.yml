@@ -2,16 +2,25 @@ services:
   broker-1:
     ports:
       - "39092:39092"
+    networks:
+      default:
+        ipv4_address: 172.18.0.50
 
   etl_ugc:
     build:
       context: ./etl_ugc
       dockerfile: ./docker/Dockerfile
+    networks:
+      default:
+        ipv4_address: 172.18.0.51
 
   clickhouse-node1:
     ports:
       - "8123:8123"
       - "9100:9000"
+    networks:
+      default:
+        ipv4_address: 172.18.0.52
 
   ugc_service:
     build:
@@ -22,6 +31,9 @@ services:
       - ./ugc/src:/opt/app
     ports:
         - "8001:8001"
+    networks:
+      default:
+        ipv4_address: 172.18.0.53
 
   auth:
     build:
@@ -30,14 +42,23 @@ services:
       target: development
     ports:
       - "5000:5000"
+    networks:
+      default:
+        ipv4_address: 172.18.0.54
 
   redis_auth:
     ports:
       - "${REDIS_AUTH_PORT}:6379"
+    networks:
+      default:
+        ipv4_address: 172.18.0.55
 
   postgres_auth:
     ports:
       - "${PG_AUTH_PORT}:5432"
+    networks:
+      default:
+        ipv4_address: 172.18.0.56
 
   backend:
     restart: "always"
@@ -50,14 +71,23 @@ services:
       - ./backend/src/:/opt/app/
     ports:
       - "8000:8000"
+    networks:
+      default:
+        ipv4_address: 172.18.0.57
 
   redis_backend:
     ports:
       - "${REDIS_BACKEND_PORT}:6379"
+    networks:
+      default:
+        ipv4_address: 172.18.0.58
 
   elasticsearch_movies:
     ports:
       - "${ELK_MOVIES_PORT}:9200"
+    networks:
+      default:
+        ipv4_address: 172.18.0.59
 
   minio-0:
     ports:
@@ -86,34 +116,58 @@ services:
   prometheus:
     ports:
       - "9090:9090"
+    networks:
+      default:
+        ipv4_address: 172.18.0.60
 
   admin_movies:
     ports:
       - "${DJANGO_MOVIES_PORT}:8000"
+    networks:
+      default:
+        ipv4_address: 172.18.0.61
 
   postgres_movies:
     ports:
       - "5436:5432"
+    networks:
+      default:
+        ipv4_address: 172.18.0.62
 
   load-service:
     ports:
       - "8010:8000"
+    networks:
+      default:
+        ipv4_address: 172.18.0.63
 
   dashboard:
     ports:
       - "5555:5555"
+    networks:
+      default:
+        ipv4_address: 172.18.0.64
 
   routing-service:
     ports:
       - "8008:8000"
+    networks:
+      default:
+        ipv4_address: 172.18.0.65
 
   sync-service:
     ports:
       - "8012:8000"
+    networks:
+      default:
+        ipv4_address: 172.18.0.66
 
   postgres_sync:
     ports:
       - "${PG_SYNC_PORT}:5432"
+    networks:
+      default:
+        ipv4_address: 172.18.0.67
 
 networks:
   default:
