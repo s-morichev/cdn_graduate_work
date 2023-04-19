@@ -50,7 +50,9 @@ class StorageWorker:
     @backoff.on_exception(backoff.expo, aiohttp.ClientError, max_tries=3)
     async def create_storage_list(self):
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"{settings.sync_service_url}/get_storages") as response:
+            async with session.get(
+                    f"{settings.sync_service_url}/api/v1/storages", headers={"Authorization": settings.secret_key}
+            ) as response:
                 response.raise_for_status()
                 storages = await response.json()
         for storage in storages:

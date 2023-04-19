@@ -18,6 +18,7 @@ async def get_media(
         token_payload: AccessTokenPayload = Depends(jwt_bearer),
         storage_worker: StorageWorker = Depends(get_storage_worker)
 ):
+    filename = str(obj_name)
     user_id = str(token_payload.sub)
     await save_info_ugc_service(obj_name, user_id)
     ip_address = await get_ip_address(request)
@@ -28,7 +29,7 @@ async def get_media(
         storage = storage_info.get("storage")
         if not storage:
             continue
-        if storage.check_file(obj_name):
-            url = storage.get_link_file(obj_name)
+        if storage.check_file(filename):
+            url = storage.get_link_file(filename)
             return {"url": url}
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="file not found")

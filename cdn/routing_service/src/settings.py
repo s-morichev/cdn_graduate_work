@@ -8,15 +8,16 @@ class Settings(BaseSettings):
     storage_secret_key: str = Field("supersecret", env="MINIO_PASSWORD")
 
     bucket: str = Field("test", env="MOVIES_BUCKET")
+    secret_key: str = Field("secret_key", env="ROUTING_SECRET_KEY")
 
     # JWT
-    jwn_secret_key: str = Field("secret_jwt_key", env="UGC_JWT_KEY")
+    jwn_secret_key: str = Field("secret_jwt_key", env="ROUTING_JWT_KEY")
     mock_auth_token: bool = Field(
-        False, env="UGC_MOCK_AUTH_TOKEN"
+        False, env="ROUTING_MOCK_AUTH_TOKEN"
     )  # для отладки - можно отключить проверку токена в заголовках
 
     sync_service_url = Field("http://localhost:8010", env="SYNC_SERVICE_URL")
-    ugc_service_url = Field("http://localhost:8010", env="SYNC_SERVICE_URL")
+    ugc_service_url = Field("http://localhost:8010", env="UGC_SERVICE_URL")
 
     class Config:
         env_file = "../.env"
