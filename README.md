@@ -11,6 +11,14 @@ https://github.com/Pummas/graduate_work
 
 Переименуйте env.example в .env, в папке /prometheus переименуйте .minio_jwt_example
  .minio_jwt. Затем выполните `make dev-run`
+После запуска контейнеров в web-ui minio (http://127.0.0.1:9001/login) подключить уведомления
+put и delete к бакету movies.
+
+### Некоторые открытые на хосте сервисы
+- http://127.0.0.1/admin админка
+- http://127.0.0.1/backend/openapi backend swagger
+- http://127.0.0.1/media/openapi routing service swagger
+- http://127.0.0.1:8012/openapi sync service swagger
 
 
 ### Мониторинг
