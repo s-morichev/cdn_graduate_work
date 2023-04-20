@@ -27,6 +27,7 @@ def upgrade() -> None:
         "s3storages",
         sa.Column("id", sa.String(length=50), nullable=False),
         sa.Column("url", sa.String(length=255), nullable=False),
+        sa.Column("load_url", sa.String(length=255), nullable=False),
         sa.Column("ip_address", sa.String(length=255), nullable=False),
         sa.Column("size_bytes", sa.BigInteger(), nullable=False),
         sa.PrimaryKeyConstraint("id"),

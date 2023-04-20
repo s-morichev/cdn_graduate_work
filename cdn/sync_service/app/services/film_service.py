@@ -51,7 +51,7 @@ class FilmService(CRUDBase[Film, FilmCreate, FilmUpdate]):
 
     async def get_films_by_storage(self, session: AsyncSession, storage_id: str):
         result = await session.execute(
-            select(self.model).join(films_s3storages).filter(films_s3storages.c.storage_id == storage_id)
+            select(self.model).join(films_s3storages).filter(films_s3storages.c.s3storage_id == storage_id)
         )
         return result.scalars().all()
 

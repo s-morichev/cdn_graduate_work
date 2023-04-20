@@ -27,7 +27,7 @@ class S3StorageService(CRUDBase[S3Storage, S3StorageCreate, S3StorageUpdate]):
     async def delete_films_from_storage(self, session: AsyncSession, storage_id: str, film_ids: list[UUID]):
         await session.execute(
             delete(films_s3storages).where(
-                and_(films_s3storages.c.storage_id == storage_id, films_s3storages.c.film_id.in_(film_ids))
+                and_(films_s3storages.c.s3storage_id == storage_id, films_s3storages.c.film_id.in_(film_ids))
             )
         )
 

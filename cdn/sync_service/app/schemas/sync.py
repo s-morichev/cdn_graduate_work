@@ -24,4 +24,4 @@ class Action(BaseSchema):
 
 
 class Event(BaseSchema):
-    actions: list[Action]
+    items: list[Action]

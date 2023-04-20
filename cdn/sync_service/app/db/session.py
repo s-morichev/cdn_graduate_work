@@ -12,7 +12,7 @@ from app.db.base_class import Base
 # нужно импортировать модели, чтобы алхимия знала о них
 from app.models.models import Film, S3Storage, films_s3storages  # noqa
 
-engine = create_async_engine(settings.SQLALCHEMY_DATABASE_URI, echo=settings.DEBUG)
+engine = create_async_engine(settings.SQLALCHEMY_DATABASE_URI, echo=False)
 async_session = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,11 @@ async def check_connection():
 async def add_storages(session: AsyncSession):
     for s3_settings in settings.S3_SETTINGS:
         storage = S3Storage(
-            id=s3_settings.id, url=s3_settings.url, ip_address=s3_settings.ip, size_bytes=s3_settings.size
+            id=s3_settings.id,
+            url=s3_settings.url,
+            load_url=s3_settings.load_url,
+            ip_address=s3_settings.ip,
+            size_bytes=s3_settings.size,
         )
         session.add(storage)
         try:

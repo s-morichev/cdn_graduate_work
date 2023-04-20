@@ -8,6 +8,7 @@ class S3StorageBase(BaseSchema):
 
     id: str
     url: AnyHttpUrl
+    load_url: AnyHttpUrl
     ip_address: IPvAnyAddress
     size_bytes: int
 
@@ -22,6 +23,7 @@ class S3StorageUpdate(BaseSchema):
     """Схема для обновления."""
 
     url: AnyHttpUrl | None = None
+    load_url: AnyHttpUrl | None = None
     ip_address: IPvAnyAddress | None = None
     size_bytes: int | None = None
 

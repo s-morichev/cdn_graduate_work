@@ -8,6 +8,7 @@ class S3Storage(Base):
     __tablename__ = "s3storages"
     id: Mapped[str] = mapped_column(String(50), primary_key=True)
     url: Mapped[str] = mapped_column(String(255), unique=True)
+    load_url: Mapped[str] = mapped_column(String(255), unique=True)
     ip_address: Mapped[str] = mapped_column(String(255), unique=True)
     size_bytes: Mapped[int] = mapped_column(BigInteger)
 

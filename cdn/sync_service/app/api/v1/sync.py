@@ -15,7 +15,7 @@ async def sync(storage_id: str, session: AsyncSession = Depends(deps.get_session
     sync_task, storage = await prepare_synchronization(session, storage_id)
     async with httpx.AsyncClient() as client:
         await client.post(
-            f"{storage.url}{settings.SYNC_HTTP_PATH}",
+            f"{storage.load_url}{settings.SYNC_HTTP_PATH}",
             json=jsonable_encoder(sync_task),
             headers={"Authorization": settings.SECRET_KEY},
         )

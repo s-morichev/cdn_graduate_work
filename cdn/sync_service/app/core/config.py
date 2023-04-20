@@ -4,6 +4,7 @@ from pydantic import BaseModel, BaseSettings, Field, validator
 class S3Settings(BaseModel):
     id: str
     url: str
+    load_url: str
     size: int
     ip: str
 
@@ -15,7 +16,7 @@ class Settings(BaseSettings):
     S3_SETTINGS: list[S3Settings] = Field(env="SYNC_S3_HOSTS", default_factory=list)
     S3_MASTER_ID: str = Field("master", env="SYNC_S3_MASTER_ID")
     S3_FREE_SPACE_LIMIT: int = Field(..., env="SYNC_S3_FREE_SPACE_LIMIT")
-    SYNC_HTTP_PATH: str = "/api/v1/sync"
+    SYNC_HTTP_PATH: str = "/v1/tasks/sync"
     SQLALCHEMY_DATABASE_URI: str = Field(
         ...,
         env="PG_SYNC_DSN",

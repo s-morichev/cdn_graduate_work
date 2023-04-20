@@ -77,6 +77,7 @@ def add_tasks(tasks_list: SyncTask):
 
 @celery.task(name="UploadFileToStorage")
 def load_object_to_storage(file_path: str, object_name: str, storage: str):
+    celery_log.debug("Loading {0} as {1} to storage {2}".format(file_path, object_name, storage))
     result = load_file_to_storage(file_path, object_name, storage)
 
     if "error" in result:
