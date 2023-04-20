@@ -3,7 +3,10 @@ from fastapi import FastAPI
 
 from src.storages import StorageWorker
 
-app = FastAPI()
+app = FastAPI(
+    docs_url="/media/openapi",
+    openapi_url="/media/openapi.json",
+)
 
 fake = Faker()
 
