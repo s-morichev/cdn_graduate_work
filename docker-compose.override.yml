@@ -134,9 +134,9 @@ services:
       default:
         ipv4_address: 172.18.0.62
 
-  load-service:
+  load-service-0:
     ports:
-      - "8010:8000"
+      - "8100:8000"
     networks:
       default:
         ipv4_address: 172.18.0.63
@@ -168,6 +168,35 @@ services:
     networks:
       default:
         ipv4_address: 172.18.0.67
+
+  load-service-1:
+    ports:
+      - "8101:8000"
+    networks:
+      default:
+        ipv4_address: 172.18.0.68
+
+  load-service-2:
+    ports:
+      - "8102:8000"
+    networks:
+      default:
+        ipv4_address: 172.18.0.69
+
+  load-service-celery-beat-0:
+    networks:
+      default:
+        ipv4_address: 172.18.0.70
+
+  load-service-celery-beat-1:
+    networks:
+      default:
+        ipv4_address: 172.18.0.71
+
+  load-service-celery-beat-2:
+    networks:
+      default:
+        ipv4_address: 172.18.0.72
 
 networks:
   default:

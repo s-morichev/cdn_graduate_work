@@ -267,33 +267,181 @@ services:
       exit 0;
       "
 
-  load-service:
+  load-service-0:
     build:
       context: ./cdn/load_service
       dockerfile: ./docker/Dockerfile
       target: development
-    container_name: load_service
+    container_name: load_service_0
     command: /bin/bash -c "uvicorn main:app --host 0.0.0.0 --reload"
     volumes:
       - media_value:/opt/app/media/
     env_file:
       - .env
+    environment:
+      - S3LS_HOME_STORAGE_URI=minio-0:9000
+      - S3LS_HOME_STORAGE_ID=master
+      - S3LS_CELERY_BROKER_URI=redis://redis_load_service:6379/0
+      - S3LS_CELERY_BACKEND_URI=redis://redis_load_service:6379/0
+      - S3LS_STORAGE_BROKER_URI=redis://redis_load_service:6379/1
     depends_on:
       - redis_load_service
 
-  load_service_worker:
+  load-service-1:
     build:
       context: ./cdn/load_service
       dockerfile: ./docker/Dockerfile
       target: development
-    container_name: load_service_celery_worker
+    container_name: load_service_1
+    command: /bin/bash -c "uvicorn main:app --host 0.0.0.0 --reload"
+    volumes:
+      - media_value:/opt/app/media/
+    env_file:
+      - .env
+    environment:
+      - S3LS_HOME_STORAGE_URI=minio-1:9000
+      - S3LS_HOME_STORAGE_ID=edge-1
+      - S3LS_CELERY_BROKER_URI=redis://redis_load_service:6379/2
+      - S3LS_CELERY_BACKEND_URI=redis://redis_load_service:6379/2
+      - S3LS_STORAGE_BROKER_URI=redis://redis_load_service:6379/3
+    depends_on:
+      - redis_load_service
+
+  load-service-2:
+    build:
+      context: ./cdn/load_service
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: load_service_2
+    command: /bin/bash -c "uvicorn main:app --host 0.0.0.0 --reload"
+    volumes:
+      - media_value:/opt/app/media/
+    env_file:
+      - .env
+    environment:
+      - S3LS_HOME_STORAGE_URI=minio-2:9000
+      - S3LS_HOME_STORAGE_ID=edge-2
+      - S3LS_CELERY_BROKER_URI=redis://redis_load_service:6379/4
+      - S3LS_CELERY_BACKEND_URI=redis://redis_load_service:6379/4
+      - S3LS_STORAGE_BROKER_URI=redis://redis_load_service:6379/5
+    depends_on:
+      - redis_load_service
+
+  load_service_worker_0:
+    build:
+      context: ./cdn/load_service
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: load_service_celery_worker_0
     command: celery -A workers.worker.celery worker --loglevel=info
     volumes:
       - media_value:/opt/app/media/
     env_file:
       - .env
+    environment:
+      - S3LS_HOME_STORAGE_URI=minio-0:9000
+      - S3LS_HOME_STORAGE_ID=master
+      - S3LS_CELERY_BROKER_URI=redis://redis_load_service:6379/0
+      - S3LS_CELERY_BACKEND_URI=redis://redis_load_service:6379/0
+      - S3LS_STORAGE_BROKER_URI=redis://redis_load_service:6379/1
     depends_on:
-      - load-service
+      - load-service-0
+      - redis_load_service
+
+  load_service_worker_1:
+    build:
+      context: ./cdn/load_service
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: load_service_celery_worker_1
+    command: celery -A workers.worker.celery worker --loglevel=info
+    volumes:
+      - media_value:/opt/app/media/
+    env_file:
+      - .env
+    environment:
+      - S3LS_HOME_STORAGE_URI=minio-1:9000
+      - S3LS_HOME_STORAGE_ID=edge-1
+      - S3LS_CELERY_BROKER_URI=redis://redis_load_service:6379/2
+      - S3LS_CELERY_BACKEND_URI=redis://redis_load_service:6379/2
+      - S3LS_STORAGE_BROKER_URI=redis://redis_load_service:6379/3
+    depends_on:
+      - load-service-1
+      - redis_load_service
+
+  load_service_worker_2:
+    build:
+      context: ./cdn/load_service
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: load_service_celery_worker_2
+    command: celery -A workers.worker.celery worker --loglevel=info
+    volumes:
+      - media_value:/opt/app/media/
+    env_file:
+      - .env
+    environment:
+      - S3LS_HOME_STORAGE_URI=minio-2:9000
+      - S3LS_HOME_STORAGE_ID=edge-2
+      - S3LS_CELERY_BROKER_URI=redis://redis_load_service:6379/4
+      - S3LS_CELERY_BACKEND_URI=redis://redis_load_service:6379/4
+      - S3LS_STORAGE_BROKER_URI=redis://redis_load_service:6379/5
+    depends_on:
+      - load-service-2
+      - redis_load_service
+
+  load-service-celery-beat-0:
+    build:
+      context: ./cdn/load_service
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: load_service_celery_beat_0
+    command: celery -A workers.worker.celery beat --loglevel=debug
+    env_file:
+      - .env
+    environment:
+      - S3LS_HOME_STORAGE_URI=minio-0:9000
+      - S3LS_HOME_STORAGE_ID=master
+      - S3LS_CELERY_BROKER_URI=redis://redis_load_service:6379/0
+      - S3LS_CELERY_BACKEND_URI=redis://redis_load_service:6379/0
+      - S3LS_STORAGE_BROKER_URI=redis://redis_load_service:6379/1
+    depends_on:
+      - redis_load_service
+
+  load-service-celery-beat-1:
+    build:
+      context: ./cdn/load_service
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: load_service_celery_beat_1
+    command: celery -A workers.worker.celery beat --loglevel=debug
+    env_file:
+      - .env
+    environment:
+      - S3LS_HOME_STORAGE_URI=minio-1:9000
+      - S3LS_HOME_STORAGE_ID=edge-1
+      - S3LS_CELERY_BROKER_URI=redis://redis_load_service:6379/2
+      - S3LS_CELERY_BACKEND_URI=redis://redis_load_service:6379/2
+      - S3LS_STORAGE_BROKER_URI=redis://redis_load_service:6379/3
+    depends_on:
+      - redis_load_service
+
+  load-service-celery-beat-2:
+    build:
+      context: ./cdn/load_service
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: load_service_celery_beat_2
+    command: celery -A workers.worker.celery beat --loglevel=debug
+    env_file:
+      - .env
+    environment:
+      - S3LS_HOME_STORAGE_URI=minio-2:9000
+      - S3LS_HOME_STORAGE_ID=edge-2
+      - S3LS_CELERY_BROKER_URI=redis://redis_load_service:6379/4
+      - S3LS_CELERY_BACKEND_URI=redis://redis_load_service:6379/4
+      - S3LS_STORAGE_BROKER_URI=redis://redis_load_service:6379/5
+    depends_on:
       - redis_load_service
 
   dashboard:
@@ -304,9 +452,9 @@ services:
     container_name: dashboard
     command: celery --broker=redis://redis_load_service:6379/0 flower
     depends_on:
-      - load-service
+      - load-service-0
       - redis_load_service
-      - load_service_worker
+      - load_service_worker_0
 
   redis_load_service:
     image: redis:7.0.10-alpine
