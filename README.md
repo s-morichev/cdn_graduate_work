@@ -1,5 +1,10 @@
-https://github.com/Pummas/graduate_work
+### Сервис CDN
 
+MVP сервиса CDN для онлайн-кинотеатра.
+
+Новый функционал находится в папке /cdn, а также частично в /movies_admin
+(добавление файлов в S3 хранилище). Остальные сервисы (авторизация, бэкенд,
+ugc, etl) взяты из предыдущих спринтов.
 
 ### Над проектом работали:  
 * Михаил Лукин (Тимлид) https://github.com/Pummas
@@ -9,9 +14,9 @@ https://github.com/Pummas/graduate_work
 
 ### Запуск сервисов
 
-Переименуйте env.example в .env, в папке /prometheus переименуйте .minio_jwt_example
+Переименуйте env.example в .env, в папке /prometheus переименуйте .minio_jwt_example в
  .minio_jwt. Затем выполните `make dev-run`
-После запуска контейнеров в web-ui minio (http://127.0.0.1:9001/login) подключить уведомления
+После запуска контейнеров в web-ui minio (http://127.0.0.1:9001/login) подключите уведомления
 put и delete к бакету movies.
 
 ### Некоторые открытые на хосте сервисы
@@ -21,23 +26,10 @@ put и delete к бакету movies.
 - http://127.0.0.1:8012/openapi sync service swagger
 
 
-### Мониторинг
+### Архитектура
 
-Для мониторинга используется Prometheus. Графики в процессе разработки и
-дебаггинга можно построить на http://localhost:9090 c использованием PromQL.
-В частности, количество файлов в бакете можно посмотреть с помощью выражения
-`minio_bucket_usage_object_total{bucket="movies", instance="nginx-minio-0:80"}`,
-свободное место на диске `minio_cluster_capacity_usable_free_bytes{instance="nginx-minio-0:80"}`
-Эти данные также можно получить с помощью  HTTP API Prometheus при запросе из
-контейнера (minio обновляет данные раз в минуту)
-```
-import requests
+![architecture](images/architecture.png)
 
-data = {"query": 'minio_bucket_usage_object_total{bucket="movies",instance="minio-0:9000"}'}
+### Диграмма последовательности
 
-response = requests.get("http://prometheus:9090/api/v1/query", params=data)
-print(resposne.json())
-
-response = requests.post("http://prometheus:9090/api/v1/query", data=data)
-print(response.json())
-```
+![sequence](images/sequence.png)

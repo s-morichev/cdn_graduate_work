@@ -1,6 +1,5 @@
 @startuml
 !include <C4/C4_Container>
-!include <logos/kafka>
 title CDN Service Architecture
 HIDE_STEREOTYPE()
 SHOW_PERSON_OUTLINE()
