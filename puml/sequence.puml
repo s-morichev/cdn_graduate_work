@@ -1,0 +1,25 @@
+@startuml
+actor user as "User"
+participant route as "Routing\nservice"
+participant sync as "Synchronization\nservice"
+participant load as "Load\nservice"
+participant admin as "Admin\npanel"
+database master as "S3 master"
+participant forecast as "Forecast\nservice\n(not implemented)"
+
+== Получение ссылки на фильм ==
+user -> route: Запрос на ссылку\nна фильм
+route -> sync: Запрос на список S3
+sync -> route: Список S3\nгде находится фильм
+route -> user: Ссылка на ближайшее\nS3 с фильмом
+
+== Синхронизация  ==
+sync -> forecast: Запрос на список\nпопулярных фильмов
+forecast -> sync: Список популярных\nфильмов
+sync -> load: Списки на удаление и\nзагрузку фильмов
+load -> sync: Уведомления об\nудалении/загрузке
+
+== Добавление нового фильма ==
+admin -> master: Загрузка нового фильма
+master -> sync: Уведомление\nо новом фильме
+@enduml

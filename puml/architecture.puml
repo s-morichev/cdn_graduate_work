@@ -1,0 +1,50 @@
+@startuml
+!include <C4/C4_Container>
+!include <logos/kafka>
+title CDN Service Architecture
+HIDE_STEREOTYPE()
+SHOW_PERSON_OUTLINE()
+
+ContainerDb(s3_master, "S3 Master")
+
+System_Boundary(edge_1, "Edge 1") {
+Container(load_edge_1, "Load Service" ,"Fastapi, Celery, Redis", "1. Загружает/удаляет фильмы\n2. Отправляет уведомления")
+ContainerDb(s3_edge_1, "S3 Edge 1")
+Rel(load_edge_1, s3_edge_1, " ")
+}
+
+System_Boundary(edge_2, "Edge 2") {
+Container(load_edge_2, "Load Service" ,"Fastapi, Celery, Redis", "1. Загружает/удаляет фильмы\n2. Отправляет уведомления")
+ContainerDb(s3_edge_2, "S3 Edge 2")
+Rel(load_edge_2, s3_edge_2, " ")
+}
+
+System_Boundary(edge_n, "Edge N") {
+Container(load_edge_n, "Load Service" ,"Fastapi, Celery, Redis", "1. Загружает/удаляет фильмы\n2. Отправляет уведомления")
+ContainerDb(s3_edge_n, "S3 Edge N")
+Rel(load_edge_n, s3_edge_n, " ")
+}
+
+Lay_L(edge_1, edge_2)
+Lay_L(edge_2, edge_n)
+
+Container(route, "Routing Service", "Fastapi", "1. Запрашивает информацию о расположении фильмов\n2. Выдает ссылку на фильм в ближайшем хранилище")
+Container(sync, "Synchronization Service", "Fastapi, PostgreSQL", "1. Обновляет и хранит информацию о расположении фильмов\n2. Дает задачи на загрузку/удаление фильмов")
+Container(admin, "Admin Panel", "Django, Celery, PostgreSQL", "Добавляет фильмы в мастер хранилище")
+
+Person_Ext(user, "User")
+
+BiRel(sync, s3_master, " ")
+BiRel(sync, load_edge_1, " ")
+BiRel(sync, load_edge_2, " ")
+BiRel(sync, load_edge_n, " ")
+BiRel(admin, s3_master, " ")
+BiRel_R(route, sync, " ")
+
+Rel(user, route, " ")
+Rel(user, s3_master, " ")
+Rel(user, s3_edge_1, " ")
+Rel(user, s3_edge_2, " ")
+Rel(user, s3_edge_n, " ")
+
+@enduml
